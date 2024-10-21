@@ -1,0 +1,119 @@
+GLSL 文字雨
+
+// https://www.shadertoy.com/view/ftVGDy
+
+let gl, program, buffer, vpos, x, y;
+let iTime;
+let id;
+
+function draw() {
+  //gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.bindTexture(gl.TEXTURE_2D, id);
+  const time = window.performance.now();
+  gl.uniform1f(iTime, time / 1000);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+}
+
+function animate() {
+
+  draw();
+  requestAnimationFrame(animate);
+}
+async function init() {
+  const canvas = document.getElementById("canvas");
+  x = canvas.offsetWidth;
+  y = canvas.offsetHeight;
+  canvas.width = x;
+  canvas.height = y;
+  gl = canvas.getContext("webgl2", {
+    alpha: false,
+    depth: false,
+    stencil: false,
+    premultipliedAlpha: false,
+    antialias: false,
+    preserveDrawingBuffer: true,
+    powerPreference: "high-performance"
+  });
+  dumpGL();
+  const vs = gl.createShader(gl.VERTEX_SHADER);
+  const fs = gl.createShader(gl.FRAGMENT_SHADER);
+  const vsSource = document.getElementById('vs').innerHTML.trim();
+  const fsSource = `${document.getElementById('fs').innerHTML.trim().replace("uniform float     iFrameRate;",`uniform float iFrameRate;
+uniform sampler2D iChannel0;`)}
+${await (await fetch('/file?id=35')).text()}`;
+  gl.shaderSource(vs, vsSource);
+  gl.shaderSource(fs, fsSource);
+  gl.compileShader(vs);
+  gl.compileShader(fs);
+
+  program = gl.createProgram();
+
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    const info = gl.getProgramInfoLog(program);
+    throw `Could not compile WebGL program. \n\n${info}`;
+  }
+  buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  const vertices = new Float32Array([-1.0, -1.0, 3.0, -1.0, -1.0, 3.0])
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+  vpos = gl.getAttribLocation(program, "pos");
+
+
+  gl.viewport(0, 0, x, y);
+
+  iTime = gl.getUniformLocation(program, "iTime");
+  gl.uniform3f(gl.getUniformLocation(program, "iResolution"), x, y, 1.0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.vertexAttribPointer(vpos, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vpos);
+  //gl.disableVertexAttribArray(vpos);
+  //gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  id = await loadImage("/08b42b43ae9d3c0605da11d0eac86618ea888e62cdd9518ee8b9097488b31560.png");
+
+  gl.uniform1i(gl.getUniformLocation(program, "iChannel0"), 0)
+  animate();
+}
+
+init();
+
+//loadImage();
+
+async function loadImage(src) {
+  const image = new Image();
+  image.src = src;
+  await new Promise((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject();
+  });
+  const id = gl.createTexture();
+  const flipY = true;
+  gl.bindTexture(gl.TEXTURE_2D, id);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flipY);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, image);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  return id;
+}
+
+
+function dumpGL() {
+  console.log("\ngl.REPEAT:" + gl.REPEAT, "\ngl.CLAMP_TO_EDGE:" + gl.CLAMP_TO_EDGE, "\ngl.RGBA8:" + gl.RGBA8, "\ngl.RGBA:" + gl.RGBA, "\ngl.UNSIGNED_BYTE:" + gl.UNSIGNED_BYTE, "\ngl.R8:" + gl.R8, "\ngl.RED:" + gl.RED, "\ngl.UNSIGNED_BYTE:" + gl.UNSIGNED_BYTE, "\ngl.R16F:" + gl.R16F, "\ngl.RED:" + gl.RED, "\ngl.FLOAT:" + gl.FLOAT, "\ngl.RGBA16F:" + gl.RGBA16F, "\ngl.RGBA:" + gl.RGBA, "\ngl.FLOAT:" + gl.FLOAT, "\ngl.R32F:" + gl.R32F, "\ngl.RED:" + gl.RED, "\ngl.FLOAT:" + gl.FLOAT, "\ngl.RGBA32F:" + gl.RGBA32F, "\ngl.RGBA:" + gl.RGBA, "\ngl.FLOAT:" + gl.FLOAT, "\ngl.RGB32F:" + gl.RGB32F, "\ngl.RGB:" + gl.RGB, "\ngl.FLOAT:" + gl.FLOAT, "\ngl.DEPTH_COMPONENT16:" + gl.DEPTH_COMPONENT16, "\ngl.DEPTH_COMPONENT:" + gl.DEPTH_COMPONENT, "\ngl.UNSIGNED_SHORT:" + gl.UNSIGNED_SHORT, "\ngl.DEPTH_COMPONENT24:" + gl.DEPTH_COMPONENT24, "\ngl.DEPTH_COMPONENT:" + gl.DEPTH_COMPONENT, "\ngl.UNSIGNED_SHORT:" + gl.UNSIGNED_SHORT, "\ngl.DEPTH_COMPONENT32F:" + gl.DEPTH_COMPONENT32F, "\ngl.DEPTH_COMPONENT:" + gl.DEPTH_COMPONENT, "\ngl.UNSIGNED_SHORT:" + gl.UNSIGNED_SHORT)
+}
