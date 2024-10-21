@@ -1,0 +1,99 @@
+let camera, scene, renderer, mesh, ground, lightPrimary;
+
+function createCamera() {
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000.0);
+  camera.position.set(0, 0, 10);
+}
+
+function createScene() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x333333);
+  scene.add(new THREE.HemisphereLight(0xffffcc, 0x19bbdc, 0.1));
+}
+
+function createRenderer() {
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  const container = document.getElementById('container');
+  const width = container.offsetWidth;
+  const height = container.offsetHeight;
+  renderer.setSize(width, height);
+  renderer.shadowMap.enabled = true;
+  container.appendChild(renderer.domElement);
+}
+
+function createLight() {
+  lightPrimary = new THREE.PointLight(0xffffff, 1.0, 10.0);
+  lightPrimary.position.set(2.0, 2.0, 2.0);
+  lightPrimary.castShadow = true;
+  scene.add(lightPrimary);
+}
+
+function createSphere() {
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(2.0, 32, 32),
+    new THREE.MeshStandardMaterial({
+      color: 0xff9999
+    })
+  );
+  sphere.receiveShadow = true;
+  scene.add(sphere);
+}
+let pivotMoon;
+
+function createMoon() {
+  pivotMoon = new THREE.Group();
+  const moonColor = Math.random() * 0x888888 + 0x888888;
+  const moon = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2 + Math.random() * 0.2, 32, 32),
+    new THREE.MeshStandardMaterial({
+      color: moonColor
+    })
+  );
+  moon.add(new THREE.PointLight(moonColor, 0.2));
+  moon.castShadow = true;
+  pivotMoon.add(moon);
+  moon.position.set(0.0, 2.5 + 0.5, 0.0);
+  scene.add(pivotMoon);
+}
+const createWorld = () => {
+
+  createSphere();
+
+  Array(1).fill(0).forEach((_, index) => {
+
+    createMoon();
+
+    /*const target = new THREE.Object3D();
+     const targetPoint = new THREE.Vector3().random();
+
+     setInterval(() => {
+       target.lookAt(targetPoint);
+
+       pivotMoon.quaternion.slerp(target.quaternion, 0.03);
+
+       if (pivotMoon.quaternion.angleTo(target.quaternion) < 0.02) {
+         targetPoint.set(THREE.MathUtils.randFloat(-4.0, 4.0), THREE.MathUtils.randFloat(-4.0, 4.0), THREE.MathUtils.randFloat(-4.0, 4.0));
+       }
+     }, 1 / 60);*/
+
+  });
+  createLight();
+}
+
+const init = () => {
+  createCamera();
+  createScene();
+  createRenderer();
+  createWorld();
+}
+
+const animate = () => {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+  pivotMoon.rotation.x += 0.01;
+}
+
+init();
+animate();

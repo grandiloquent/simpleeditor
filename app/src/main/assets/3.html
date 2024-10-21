@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        async function loadCubeMap() {
+            const images = [];
+            await Promise.all();
+            var id = gl.createTexture();
+
+            const flipY = false;
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, id);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flipY);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE,
+                image[0]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE,
+                image[1]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE,
+                (flipY ? image[3] : image[2]));
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE,
+                (flipY ? image[2] : image[3]));
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE,
+                image[4]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE,
+                image[5]);
+
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+
+        }
+    </script>
+</body>
+
+</html>

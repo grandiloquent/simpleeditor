@@ -27,11 +27,14 @@ const items = [
         "预览",
         async () => {
             await saveData();
-            if (typeof NativeAndroid !== 'undefined') {
-                NativeAndroid.launchApp(id);
-            } else {
-                window.open(`${baseUri}/viewer?id=${id}`, '_blank');
+            if ((!/\.[a-z0-9]+$/.test(document.title))) {
+                if (typeof NativeAndroid !== 'undefined') {
+                    NativeAndroid.launchApp(id);
+                } else {
+                    window.open(`${baseUri}/viewer?id=${id}`, '_blank');
+                }
             }
+
         }
     ], [
         2,
@@ -143,8 +146,8 @@ const items = [
         16,
         "link",
         "打开",
-         () => {
-           openFile(); 
+        () => {
+            openFile();
         }
     ],
 ];
@@ -178,7 +181,7 @@ items.push([
     "code",
     "函数",
     async () => {
-       fun(textarea)
+        fun(textarea)
     }
 ]);
 items.push([
@@ -194,7 +197,7 @@ items.push([
     "translate",
     "函数",
     () => {
-        translateCode(textarea) 
+        translateCode(textarea)
     }
 ]);
 items.push([
@@ -215,10 +218,10 @@ items.push([
 ]);
 items.push([
     25,
-    "segment",
-    "格式",
+    "search",
+    "搜索",
     () => {
-        formatter(textarea)
+        replaceString()
     }
 ]);
 items.push([
@@ -242,7 +245,7 @@ items.push([
     "code",
     "代码段",
     () => {
-      insertSnippets();
+        insertSnippets();
     }
 ]);
 document.addEventListener('keydown', async evt => {
@@ -271,7 +274,7 @@ document.addEventListener('keydown', async evt => {
             //     window.open(`${baseUri}/svgviewer?id=${id}`, '_blank');
             // }
             formatHead(textarea)
-            
+
         } else if (evt.key === 'F5') {
             evt.preventDefault();
             formatCode()

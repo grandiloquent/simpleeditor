@@ -176,7 +176,7 @@ function formatCode() {
     //     return
     // }
     const options = { indent_size: 2 }
-    if (document.title.startsWith("Three")) {
+    if (document.title.startsWith("Three") || document.title.startsWith("GLSL")) {
         if (textarea.value.indexOf("</script>") !== -1) {
             const start = substringBeforeLast(textarea.value, '</script>');
             const end = substringAfterLast(textarea.value, '</script>');
@@ -192,7 +192,7 @@ function formatCode() {
     } else if (document.title.endsWith(".js")) {
         textarea.value = js_beautify(textarea.value, options);
     } else {
-        textarea.value = formatGlslCode(html_beautify(textarea.value, options));
+        textarea.value = html_beautify(textarea.value, options);
     }
 }
 function formatGlslCode(s) {
@@ -1159,7 +1159,7 @@ function copyCode() {
     }
     writeText(textarea.value.substring(start, end));
 }
-function insertSnippets() {
+async function insertSnippets() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
     while (start - 1 > -1 && !/\s/.test(textarea.value[start - 1])) {
@@ -1170,258 +1170,24 @@ function insertSnippets() {
     }
     let s = textarea.value.substring(start, end);
     const snippets = {
-        "tg": `
-const scene = new THREE.Scene();
-
-const container = document.getElementById('container');
-let width = container.offsetWidth;
-let height = container.offsetHeight;
-
-const renderer = new THREE.WebGLRenderer();
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(width, height);
-renderer.setClearColor(0xeeeeee, 1);
-renderer.physicallyCorrectLigths = true;
-renderer.outputWEncoding = THREE.sRGBEncoding;
-
-container.appendChild(renderer.domElement);
-
-const camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.001,
-    1000
-);
-camera.position.set(0, 0, 2);
-const controls = new OrbitControls(camera, renderer.domElement);
-let material;
-let geometry;
-let sphere;
-let time;
-
-async function init() {
-    await addObjects();
-    render();
-    resize();
-    window.addEventListener('resize', resize)
-}
-async function addObjects() {
-    material = new THREE.ShaderMaterial({
-        extensions: {
-            derivatives: "#extension GL_OES_standard_derivatives : enable"
-        },
-        side: THREE.DoubleSide,
-        uniforms: {
-            time: { value: 0 },
-            resolution: { value: new THREE.Vector4() },
-        },
-        vertexShader: await (await fetch('/file?id=')).text(),
-        fragmentShader: await (await fetch('/file?id=')).text()
-    });
-
-    geometry = new THREE.SphereGeometry(1, 30, 30);
-    sphere = new THREE.Mesh(geometry, material);
-    scene.add(sphere);
-}
-function render() {
-    time += 0.05;
-    material.uniforms.time.value = time;
-    requestAnimationFrame(render);
-    renderer.render(scene, camera);
-}
-function resize() {
-    width = container.offsetWidth;
-    height = container.offsetHeight;
-    renderer.setSize(width, height);
-    camera.aspect = width / height
-    camera.updateProjectionMatrix()
-}
-init();
-`,
-"three":`Three 绕转
-
-let camera, scene, renderer, mesh, ground, lightPrimary;
-
-function createCamera() {
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000.0);
-  camera.position.set(0, 0, 10);
-}
-
-function createScene() {
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x333333);
-  scene.add(new THREE.HemisphereLight(0xffffcc, 0x19bbdc, 0.1));
-}
-
-function createRenderer() {
-  renderer = new THREE.WebGLRenderer({
-    antialias: true
-  });
-  const container = document.getElementById('container');
-  const width = container.offsetWidth;
-  const height = container.offsetHeight;
-  renderer.setSize(width, height);
-  renderer.shadowMap.enabled = true;
-  container.appendChild(renderer.domElement);
-}
-
-function createLight() {
-  lightPrimary = new THREE.PointLight(0xffffff, 1.0, 10.0);
-  lightPrimary.position.set(2.0, 2.0, 2.0);
-  lightPrimary.castShadow = true;
-  scene.add(lightPrimary);
-}
-
-function createSphere() {
-  const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2.0, 32, 32),
-    new THREE.MeshStandardMaterial({
-      color: 0xff9999
-    })
-  );
-  sphere.receiveShadow = true;
-  scene.add(sphere);
-}
-let pivotMoon;
-
-function createMoon() {
-  pivotMoon = new THREE.Group();
-  const moonColor = Math.random() * 0x888888 + 0x888888;
-  const moon = new THREE.Mesh(
-    new THREE.SphereGeometry(0.2 + Math.random() * 0.2, 32, 32),
-    new THREE.MeshStandardMaterial({
-      color: moonColor
-    })
-  );
-  moon.add(new THREE.PointLight(moonColor, 0.2));
-  moon.castShadow = true;
-  pivotMoon.add(moon);
-  moon.position.set(0.0, 2.5 + 0.5, 0.0);
-  scene.add(pivotMoon);
-}
-const createWorld = () => {
-
-  createSphere();
-
-  Array(1).fill(0).forEach((_, index) => {
-
-    createMoon();
-
-    /*const target = new THREE.Object3D();
-     const targetPoint = new THREE.Vector3().random();
-
-     setInterval(() => {
-       target.lookAt(targetPoint);
-
-       pivotMoon.quaternion.slerp(target.quaternion, 0.03);
-
-       if (pivotMoon.quaternion.angleTo(target.quaternion) < 0.02) {
-         targetPoint.set(THREE.MathUtils.randFloat(-4.0, 4.0), THREE.MathUtils.randFloat(-4.0, 4.0), THREE.MathUtils.randFloat(-4.0, 4.0));
-       }
-     }, 1 / 60);*/
-
-  });
-  createLight();
-}
-
-const init = () => {
-  createCamera();
-  createScene();
-  createRenderer();
-  createWorld();
-}
-
-const animate = () => {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-  pivotMoon.rotation.x += 0.01;
-}
-
-init();
-animate();`,"g":`let gl, program, buffer, vpos, x, y;
-        let iTime;
-
-        function draw() {
-            //gl.clear(gl.COLOR_BUFFER_BIT);
-
-            const time = window.performance.now();
-            gl.uniform1f(iTime, time / 1000);
-
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-        }
-
-        function animate() {
-            draw();
-            requestAnimationFrame(animate);
-        }
-        async function init() {
-            const canvas = document.getElementById("canvas");
-            x = canvas.offsetWidth;
-            y = canvas.offsetHeight;
-            canvas.width = x;
-            canvas.height = y;
-            gl = canvas.getContext("webgl2",
-                {
-                    alpha: false,
-                    depth: false,
-                    stencil: false,
-                    premultipliedAlpha: false,
-                    antialias: false,
-                    preserveDrawingBuffer: true,
-                    powerPreference: "high-performance"
-                }
-            );
-
-            const vs = gl.createShader(gl.VERTEX_SHADER);
-            const fs = gl.createShader(gl.FRAGMENT_SHADER);
-            const vsSource = document.getElementById('vs').innerHTML.trim();
-            const fsSource = \`$\{document.getElementById('fs').innerHTML.trim().replace("uniform float     iFrameRate;",\`uniform float     iFrameRate;
-uniform sampler3D iChannel0;\`)}    
-$\{await (await fetch('fragment.glsl')).text()}\`;
-            gl.shaderSource(vs, vsSource);
-            gl.shaderSource(fs, fsSource);
-            gl.compileShader(vs);
-            gl.compileShader(fs);
-
-            program = gl.createProgram();
-
-            gl.attachShader(program, vs);
-            gl.attachShader(program, fs);
-
-            gl.linkProgram(program);
-            gl.useProgram(program);
-
-            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                const info = gl.getProgramInfoLog(program);
-                throw \`Could not compile WebGL program. \n\n$\{info}\`;
-            }
-            buffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            const vertices = new Float32Array([-1.0, -1.0, 3.0, -1.0, -1.0, 3.0])
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-            vpos = gl.getAttribLocation(program, "pos");
-
-
-            gl.viewport(0, 0, x, y);
-
-            iTime = gl.getUniformLocation(program, "iTime");
-            gl.uniform3f(gl.getUniformLocation(program, "iResolution"), x, y, 1.0);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(vpos, 2, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(vpos);
-            //gl.disableVertexAttribArray(vpos);
-            //gl.bindBuffer(gl.ARRAY_BUFFER, null);
-            animate();
-        }
-
-        init();`
+        "tg": await (fetch("/tg.snippets")).text(),
+        "three": await (fetch("/three.snippets")).text(),
+        "g": await (fetch("/g.snippets")).text(),
+        "gc": await (fetch("/gc.snippets")).text()
     }
     let value = snippets[s];
     if (value) {
         textarea.setRangeText(value, start, end);
     }
+}
+
+function replaceString() {
+    let points = findExtendPosition(textarea);
+    let s = textarea.value.substring(points[0], points[1]).trim();
+
+    let before = substringBefore(s, '\n').trim();
+    let after = substringAfter(s, '\n').trim();
+    let parts = before.split('|');
+    after = after.replaceAll(parts[0], parts[1]);
+    textarea.setRangeText(after, points[0], points[1]);
 }
