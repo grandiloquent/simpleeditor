@@ -582,34 +582,6 @@ uniform vec3      iChannelResolution[4];
 uniform int       iFrame;
 uniform float     iTimeDelta;
 uniform float     iFrameRate;
-uniform sampler2D iChannel0;
-uniform struct {
-  sampler2D sampler;
-  vec3  size;
-  float time;
-  int   loaded;
-}iCh0;
-uniform sampler2D iChannel1;
-uniform struct {
-  sampler2D sampler;
-  vec3  size;
-  float time;
-  int   loaded;
-}iCh1;
-uniform sampler2D iChannel2;
-uniform struct {
-  sampler2D sampler;
-  vec3  size;
-  float time;
-  int   loaded;
-}iCh2;
-uniform sampler2D iChannel3;
-uniform struct {
-  sampler2D sampler;
-  vec3  size;
-  float time;
-  int   loaded;
-}iCh3;
 void mainImage( out vec4 c, in vec2 f );
 void st_assert( bool cond );
 void st_assert( bool cond, int v );
