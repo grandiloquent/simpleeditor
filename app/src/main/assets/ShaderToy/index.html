@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        canvas {
+            width: 512px;
+            height: 288px;
+        }
+    </style>
+    <script type="x-shader/x-vertex" id="vs">#version 300 es
+        #ifdef GL_ES
+        precision highp float;
+        precision highp int;
+        precision mediump sampler3D;
+        #endif
+        layout(location = 0) in vec2 pos;
+        void main() {
+            gl_Position = vec4(pos.xy, 0.0f, 1.0f);
+        }</script>
+    <script type="x-shader/x-fragment" id="fs">
+            #version 300 es
+#ifdef GL_ES
+precision highp float;
+precision highp int;
+precision mediump sampler3D;
+#endif
+#define HW_PERFORMANCE 1
+uniform vec3      iResolution;
+uniform float     iTime;
+uniform float     iChannelTime[4];
+uniform vec4      iMouse;
+uniform vec4      iDate;
+uniform float     iSampleRate;
+uniform vec3      iChannelResolution[4];
+uniform int       iFrame;
+uniform float     iTimeDelta;
+uniform float     iFrameRate;
+uniform sampler2D iChannel0;
+uniform struct {
+  sampler2D sampler;
+  vec3  size;
+  float time;
+  int   loaded;
+}iCh0;
+uniform sampler2D iChannel1;
+uniform struct {
+  sampler2D sampler;
+  vec3  size;
+  float time;
+  int   loaded;
+}iCh1;
+uniform sampler2D iChannel2;
+uniform struct {
+  sampler2D sampler;
+  vec3  size;
+  float time;
+  int   loaded;
+}iCh2;
+uniform sampler2D iChannel3;
+uniform struct {
+  sampler2D sampler;
+  vec3  size;
+  float time;
+  int   loaded;
+}iCh3;
+void mainImage( out vec4 c, in vec2 f );
+void st_assert( bool cond );
+void st_assert( bool cond, int v );
+
+out vec4 shadertoy_out_color;
+void st_assert( bool cond, int v ) {if(!cond){if(v==0)shadertoy_out_color.x=-1.0;else if(v==1)shadertoy_out_color.y=-1.0;else if(v==2)shadertoy_out_color.z=-1.0;else shadertoy_out_color.w=-1.0;}}
+void st_assert( bool cond        ) {if(!cond)shadertoy_out_color.x=-1.0;}
+void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(1e20);mainImage( color, gl_FragCoord.xy );if(shadertoy_out_color.x<0.0) color=vec4(1.0,0.0,0.0,1.0);if(shadertoy_out_color.y<0.0) color=vec4(0.0,1.0,0.0,1.0);if(shadertoy_out_color.z<0.0) color=vec4(0.0,0.0,1.0,1.0);if(shadertoy_out_color.w<0.0) color=vec4(1.0,1.0,0.0,1.0);shadertoy_out_color = vec4(color.xyz,1.0);}
+        </script>
+</head>
+
+<body>
+    <canvas id="canvas" width="512" height="288">
+
+    </canvas>
+    <script>
+        let gl, program, buffer, vpos, x, y;
+        let iTime;
+
+        function draw() {
+            //gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const time = window.performance.now();
+            gl.uniform1f(iTime, time / 1000);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        }
+
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+        async function init() {
+            const canvas = document.getElementById("canvas");
+            x = canvas.offsetWidth;
+            y = canvas.offsetHeight;
+            canvas.width = x;
+            canvas.height = y;
+            gl = canvas.getContext("webgl2",
+                {
+                    alpha: false,
+                    depth: false,
+                    stencil: false,
+                    premultipliedAlpha: false,
+                    antialias: false,
+                    preserveDrawingBuffer: true,
+                    powerPreference: "high-performance"
+                }
+            );
+
+            const vs = gl.createShader(gl.VERTEX_SHADER);
+            const fs = gl.createShader(gl.FRAGMENT_SHADER);
+            const vsSource = document.getElementById('vs').innerHTML.trim();
+            const fsSource = `${document.getElementById('fs').innerHTML.trim()}    
+${await (await fetch('fragment.glsl')).text()}`;
+            gl.shaderSource(vs, vsSource);
+            gl.shaderSource(fs, fsSource);
+            gl.compileShader(vs);
+            gl.compileShader(fs);
+
+            program = gl.createProgram();
+
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                const info = gl.getProgramInfoLog(program);
+                throw `Could not compile WebGL program. \n\n${info}`;
+            }
+            buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            var vertices = new Float32Array([
+                -1.0, -1.0, 0.0,
+                0.0, 1.0, 0.0,
+                1.0, -1.0, 0.0,
+            ]);
+            vertices = new Float32Array([-1.0, -1.0, 3.0, -1.0, -1.0, 3.0])
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+            vpos = gl.getAttribLocation(program, "pos");
+
+
+            gl.viewport(0, 0, x, y);
+
+            iTime = gl.getUniformLocation(program, "iTime");
+            gl.uniform3f(gl.getUniformLocation(program, "iResolution"), x, y, 1.0);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.vertexAttribPointer(vpos, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(vpos);
+            //gl.disableVertexAttribArray(vpos);
+            //gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            animate();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
