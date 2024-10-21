@@ -1397,12 +1397,7 @@ $\{await (await fetch('fragment.glsl')).text()}\`;
             }
             buffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            var vertices = new Float32Array([
-                -1.0, -1.0, 0.0,
-                0.0, 1.0, 0.0,
-                1.0, -1.0, 0.0,
-            ]);
-            vertices = new Float32Array([-1.0, -1.0, 3.0, -1.0, -1.0, 3.0])
+            const vertices = new Float32Array([-1.0, -1.0, 3.0, -1.0, -1.0, 3.0])
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
