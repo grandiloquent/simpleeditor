@@ -1376,7 +1376,8 @@ animate();`,"g":`let gl, program, buffer, vpos, x, y;
             const vs = gl.createShader(gl.VERTEX_SHADER);
             const fs = gl.createShader(gl.FRAGMENT_SHADER);
             const vsSource = document.getElementById('vs').innerHTML.trim();
-            const fsSource = \`$\{document.getElementById('fs').innerHTML.trim()}    
+            const fsSource = \`$\{document.getElementById('fs').innerHTML.trim().replace("uniform float     iFrameRate;",\`uniform float     iFrameRate;
+uniform sampler3D iChannel0;\`)}    
 $\{await (await fetch('fragment.glsl')).text()}\`;
             gl.shaderSource(vs, vsSource);
             gl.shaderSource(fs, fsSource);
