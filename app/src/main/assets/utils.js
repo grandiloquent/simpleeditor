@@ -1170,10 +1170,10 @@ async function insertSnippets() {
     }
     let s = textarea.value.substring(start, end);
     const snippets = {
-        "tg": await (fetch("/tg.snippets")).text(),
-        "three": await (fetch("/three.snippets")).text(),
-        "g": await (fetch("/g.snippets")).text(),
-        "gc": await (fetch("/gc.snippets")).text()
+        "tg": await (await fetch("/tg.txt")).text(),
+        "three": await (await fetch("/three.txt")).text(),
+        "g": await (await fetch("/g.txt")).text(),
+        "gc": await (await fetch("/gc.txt")).text()
     }
     let value = snippets[s];
     if (value) {
