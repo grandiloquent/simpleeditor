@@ -210,7 +210,7 @@ items.push([
 ]);
 items.push([
     24,
-    "new",
+    "add",
     "新建",
     () => {
        newFile();

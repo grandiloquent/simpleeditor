@@ -1164,6 +1164,7 @@ function copyCode() {
     }
     writeText(textarea.value.substring(start, end));
 }
+let snippets = null;
 async function insertSnippets() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
@@ -1174,7 +1175,7 @@ async function insertSnippets() {
         end++;
     }
     let s = textarea.value.substring(start, end);
-    const snippets = {
+    snippets = snippets || {
         "tg": await (await fetch("/tg.txt")).text(),
         "three": await (await fetch("/three.txt")).text(),
         "g": await (await fetch("/g.txt")).text(),
@@ -1220,14 +1221,14 @@ async function newFile() {
             throw new Error();
         }
         let sid = await res.text();
-        textarea.setRangeText(`/file?id=${sid}`, textarea.selectionStart, textarea.selectionEnd);
         res = await fetch(`${baseUri}/svgtag`, {
             method: 'POST',
             body: JSON.stringify({
-                id: sid,
+                id: parseInt(sid),
                 names: ["文件"]
             })
         });
+        textarea.setRangeText(`/file?id=${sid}`, textarea.selectionStart, textarea.selectionEnd);
     } catch (error) {
         toast.setAttribute('message', '错误');
     }
