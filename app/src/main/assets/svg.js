@@ -210,10 +210,10 @@ items.push([
 ]);
 items.push([
     24,
-    "format_align_center",
-    "居中",
+    "new",
+    "新建",
     () => {
-        formatCenter(textarea)
+       newFile();
     }
 ]);
 items.push([

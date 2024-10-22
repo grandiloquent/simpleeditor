@@ -1200,3 +1200,35 @@ function replaceString() {
     after = after.replaceAll(parts[0], parts[1]);
     textarea.setRangeText(after, points[0], points[1]);
 }
+
+async function newFile() {
+
+    let body = {
+        id: 0,
+        title: `.glsl`,
+        content: '.glsl'
+    };
+    // await submitNote(getBaseUri(), JSON.stringify(body));
+    // document.getElementById('toast').setAttribute('message', '成功');
+    let res;
+    try {
+        res = await fetch(`${baseUri}/svg`, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+        if (res.status !== 200) {
+            throw new Error();
+        }
+        let sid = await res.text();
+        textarea.setRangeText(`/file?id=${sid}`, textarea.selectionStart, textarea.selectionEnd);
+        res = await fetch(`${baseUri}/svgtag`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: sid,
+                names: ["文件"]
+            })
+        });
+    } catch (error) {
+        toast.setAttribute('message', '错误');
+    }
+}
