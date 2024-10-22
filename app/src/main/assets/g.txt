@@ -1,4 +1,4 @@
-GLSL 文字雨
+GLSL
 
 let gl, program, buffer, vpos, x, y;
 let iTime;

@@ -1,0 +1,33 @@
+const startRecording = () => {
+      const canvas = document.querySelector("canvas");
+      const data = []; // here we will store our recorded media chunks (Blobs)
+      const stream = canvas.captureStream(30); // records the canvas in real time at our preferred framerate 30 in this case.
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "video/webm; codecs=vp9"
+      }); // init the recorder
+      // whenever the recorder has new data, we will store it in our array
+      mediaRecorder.ondataavailable = (e) => data.push(e.data);
+      // only when the recorder stops, we construct a complete Blob from all the chunks
+      mediaRecorder.onstop = (e) =>
+        downloadVideo(new Blob(data, {
+          type: "video/webm;codecsvp9"
+        }));
+      mediaRecorder.start();
+      setTimeout(() => {
+        mediaRecorder.stop();
+      }, 8000); // stop recording in 6s
+    };
+    const downloadVideo = async (blob) => {
+      const div = document.querySelector("body");
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "test.webm";
+      a.className = "button";
+      a.innerText = "click here to download";
+      div.appendChild(a);
+    };
+    setTimeout(() => {
+      startRecording();
+    }, 5000);
+// ffmpeg -fflags +genpts -i 1.webm  -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -r 24 1.mp4

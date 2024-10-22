@@ -1,0 +1,2 @@
+canvas.style.width = canvas.offsetWidth * 2 + "px";
+  canvas.style.height = canvas.offsetHeight * 2 + "px";

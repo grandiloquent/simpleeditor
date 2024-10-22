@@ -1180,6 +1180,9 @@ async function insertSnippets() {
         "g": await (await fetch("/g.txt")).text(),
         "gc": await (await fetch("/gc.txt")).text(),
         "gtext": await (await fetch("/gtext.txt")).text(),
+        "video": await (await fetch("/video.txt")).text(),
+        "size": await (await fetch("/size.txt")).text(),
+
     }
     let value = snippets[s];
     if (value) {

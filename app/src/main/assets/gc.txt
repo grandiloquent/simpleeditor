@@ -1,3 +1,5 @@
+GLSL 图
+
 // https://www.shadertoy.com/view/lfsBzr
 
 let gl, program, buffer, vpos, x, y;
