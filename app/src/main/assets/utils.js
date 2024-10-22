@@ -1097,9 +1097,9 @@ function openFile() {
 
     if (/file\?id=\d+/.test(s)) {
         if (typeof NativeAndroid !== 'undefined') {
-            NativeAndroid.open(window.location.origin + `/svg?id=${substringAfterLast(s, '=')}`);
+            NativeAndroid.open(window.location.origin + `/svg.html?id=${substringAfterLast(s, '=')}`);
         } else
-            window.location = `/svg?id=${substringAfterLast(s, '=')}`
+            window.location = `/svg.html?id=${substringAfterLast(s, '=')}`
     }
 }
 function processTranslateCode(s) {
