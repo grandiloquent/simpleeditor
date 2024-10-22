@@ -1086,15 +1086,20 @@ function removeEnd() {
 function openFile() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
-    while (start - 1 > 0 && !textarea.value[start - 1] !== '"') {
+    while (start - 1 > -1 && textarea.value[start - 1] !== '"' && textarea.value[start - 1] !== "'") {
         start--;
     }
-    while (end < textarea.value.length && !textarea.value[end + 1] !== '"') {
+    while (end < textarea.value.length && textarea.value[end + 1] !== '"' && textarea.value[end + 1] !== "'") {
+        console.log(end)
         end++;
     }
-    const s = textarea.value.substring(start, end - 1);
+    const s = textarea.value.substring(start, end + 1);
+
     if (/file\?id=\d+/.test(s)) {
-        window.location = `/svg?id=${substringAfterLast(s, '=')}`
+        if (typeof NativeAndroid !== 'undefined') {
+            NativeAndroid.open(window.location.origin + `/svg?id=${substringAfterLast(s, '=')}`);
+        } else
+            window.location = `/svg?id=${substringAfterLast(s, '=')}`
     }
 }
 function processTranslateCode(s) {

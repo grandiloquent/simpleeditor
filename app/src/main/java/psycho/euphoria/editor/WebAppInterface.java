@@ -268,4 +268,14 @@ public class WebAppInterface {
         return sb.toString();
     }
 
+    @JavascriptInterface
+    public void open(String s){
+        mContext.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mContext.open(s);
+            }
+        });
+    }
+
 }

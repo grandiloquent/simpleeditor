@@ -533,16 +533,16 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
 </body>
 
 </html>)";
-                       }else if(title.starts_with("GLSL")){
-                           ss<<R"(<!DOCTYPE html>
+                       } else if (title.starts_with("GLSL")) {
+                           ss << R"(<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>)"<<
-                             title<<
-                             R"(</title>
+    <title>)" <<
+                              title <<
+                              R"(</title>
     <style>
         body {
             height: 100%;
@@ -597,9 +597,9 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
     <canvas id="canvas">
 
     </canvas>
-    <script>)"<<
-                             content<<
-                             R"(
+    <script>)" <<
+                              content <<
+                              R"(
     </script>
 </body>
 
@@ -727,17 +727,11 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
             return;
         }
         std::vector<std::string> names = doc["names"];
-        if (names.
-
-                empty()
-
-                ) {
-            res.
-                    status = 404;
+        if (names.empty()) {
+            res.status = 404;
             return;
         }
-        static const char query[]
-                = R"(delete from svg_tag where svg_id =?1)";
+        static const char query[] = R"(delete from svg_tag where svg_id =?1)";
         db::query<query>(id);
         for (
             auto i
@@ -802,7 +796,7 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
 //            db::query<q1>();
 
 //            static const char q1[]
-//                    = R"(delete FROM tag where name='')";
+//                    = R"(delete FROM tag where name='代码段')";
 //            db::query<q1>();
             static const char query[]
                     = R"(select name FROM tag JOIN svg_tag on tag.id = svg_tag.tag_id where svg_tag.svg_id=$1)";

@@ -134,13 +134,21 @@ public class MainActivity extends Activity {
     }
 
     public void loadUrl(String id) {
-        Log.e("B5aOx2", String.format("loadUrl, %s", "----------------"+id));
         mWebView1.setVisibility(View.INVISIBLE);
         mWebView3.setVisibility(View.INVISIBLE);
         mWebView4.setVisibility(View.INVISIBLE);
         mWebView2.setVisibility(View.VISIBLE);
         mWebView2.loadUrl("http://0.0.0.0:8100/viewer?id=" + id);
 
+    }
+
+    public void open(String s) {
+        Log.e("B5aOx2", String.format("open, %s", s));
+        mWebView1.setVisibility(View.INVISIBLE);
+        mWebView3.setVisibility(View.INVISIBLE);
+        mWebView4.setVisibility(View.INVISIBLE);
+        mWebView2.setVisibility(View.VISIBLE);
+        mWebView2.loadUrl(s);
     }
 
     public static void requestNotificationPermission(Activity activity) {
