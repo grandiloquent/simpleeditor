@@ -1101,9 +1101,14 @@ function openFile() {
         } else
             window.open(`/svg.html?id=${substringAfterLast(s, '=')}`, '_blank');
     } else {
-        let id = /(?<=file\?id\=)\d+/.match(textarea.value)
-        if (id)
-            window.open(`/svg.html?id=${id}`, '_blank');
+        let id = /(?<=file\?id\=)\d+/.exec(textarea.value)
+        if (id) {
+            if (typeof NativeAndroid !== 'undefined') {
+                NativeAndroid.open(window.location.origin + `/svg.html?id=${id[0]}`);
+            } else
+                window.open(`/svg.html?id=${id[0]}`, '_blank');
+     
+        }
     }
 }
 function processTranslateCode(s) {
