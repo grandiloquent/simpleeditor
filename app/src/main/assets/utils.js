@@ -1099,7 +1099,7 @@ function openFile() {
         if (typeof NativeAndroid !== 'undefined') {
             NativeAndroid.open(window.location.origin + `/svg.html?id=${substringAfterLast(s, '=')}`);
         } else
-            window.location = `/svg.html?id=${substringAfterLast(s, '=')}`
+            window.location = `/svg.html?id=${substringAfterLast(s, '='),'_blank'}`
     }
 }
 function processTranslateCode(s) {
