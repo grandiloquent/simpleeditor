@@ -1099,7 +1099,11 @@ function openFile() {
         if (typeof NativeAndroid !== 'undefined') {
             NativeAndroid.open(window.location.origin + `/svg.html?id=${substringAfterLast(s, '=')}`);
         } else
-            window.location = `/svg.html?id=${substringAfterLast(s, '='),'_blank'}`
+            window.open(`/svg.html?id=${substringAfterLast(s, '=')}`, '_blank');
+    } else {
+        let id = /(?<=file\?id\=)\d+/.match(textarea.value)
+        if (id)
+            window.open(`/svg.html?id=${id}`, '_blank');
     }
 }
 function processTranslateCode(s) {
@@ -1265,7 +1269,7 @@ async function newTemplate() {
             body: JSON.stringify({
                 id: 0,
                 title: `GLSL ${sid}`,
-                content: `${mG.replace(/id=\d+/,`id=${sid}`)}`
+                content: `${mG.replace(/id=\d+/, `id=${sid}`)}`
             })
         });
     } catch (error) {
