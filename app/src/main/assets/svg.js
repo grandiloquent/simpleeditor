@@ -234,10 +234,10 @@ items.push([
 ]);
 items.push([
     27,
-    "eco",
-    "智能",
+    "add",
+    "模板",
     () => {
-        gemini(textarea)
+        newTemplate();
     }
 ]);
 items.push([

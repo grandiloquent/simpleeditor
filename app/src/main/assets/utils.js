@@ -1183,7 +1183,7 @@ async function insertSnippets() {
         "gtext": await (await fetch("/gtext.txt")).text(),
         "video": await (await fetch("/video.txt")).text(),
         "size": await (await fetch("/size.txt")).text(),
-        "gc2": await (await fetch("/gc2.txt")).text(),
+        "gi2": await (await fetch("/gi2.txt")).text(),
     }
     let value = snippets[s];
     if (value) {
@@ -1201,7 +1201,7 @@ function replaceString() {
     after = after.replaceAll(parts[0], parts[1]);
     textarea.setRangeText(after, points[0], points[1]);
 }
-
+let mG;
 async function newFile() {
 
     let body = {
@@ -1229,6 +1229,45 @@ async function newFile() {
             })
         });
         textarea.setRangeText(`/file?id=${sid}`, textarea.selectionStart, textarea.selectionEnd);
+    } catch (error) {
+        toast.setAttribute('message', '错误');
+    }
+}
+async function newTemplate() {
+
+
+    // await submitNote(getBaseUri(), JSON.stringify(body));
+    // document.getElementById('toast').setAttribute('message', '成功');
+    let res;
+    try {
+        res = await fetch(`${baseUri}/svg`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: 0,
+                title: `.glsl`,
+                content: '.glsl'
+            })
+        });
+        if (res.status !== 200) {
+            throw new Error();
+        }
+        let sid = await res.text();
+        res = await fetch(`${baseUri}/svgtag`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: parseInt(sid),
+                names: ["文件"]
+            })
+        });
+        mG = mG || await (await fetch("/g.txt")).text();
+        res = await fetch(`${baseUri}/svg`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: 0,
+                title: `GLSL ${sid}`,
+                content: `${mG.replace(/id=\d+/,`id=${sid}`)}`
+            })
+        });
     } catch (error) {
         toast.setAttribute('message', '错误');
     }
