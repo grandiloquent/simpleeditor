@@ -234,10 +234,10 @@ items.push([
 ]);
 items.push([
     27,
-    "add",
-    "模板",
+    "save",
+    "保存",
     () => {
-        newTemplate();
+        saveFile();
     }
 ]);
 items.push([

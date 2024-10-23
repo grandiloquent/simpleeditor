@@ -186,7 +186,13 @@ function formatCode() {
         }
 
     } else if (document.title.endsWith(".glsl")) {
-        textarea.value = formatGlslCode(textarea.value);
+        const s = textarea.value.trim();
+        const before = substringBefore(s, '\n').trim();
+        const after = substringAfter(s, '\n').split('\n').filter(x => x.trim()).join('\n').trim();
+
+        textarea.value = `${before} 
+        
+${formatGlslCode(after)}`;;
     } else if (document.title.endsWith(".css")) {
         textarea.value = css_beautify(textarea.value, options);
     } else if (document.title.endsWith(".js")) {
@@ -1107,7 +1113,7 @@ function openFile() {
                 NativeAndroid.open(window.location.origin + `/svg.html?id=${id[0]}`);
             } else
                 window.open(`/svg.html?id=${id[0]}`, '_blank');
-     
+
         }
     }
 }
@@ -1277,6 +1283,43 @@ async function newTemplate() {
                 content: `${mG.replace(/id=\d+/, `id=${sid}`)}`
             })
         });
+    } catch (error) {
+        toast.setAttribute('message', '错误');
+    }
+}
+
+async function saveFile() {
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    while (start - 1 > -1 && textarea.value[start - 1] !== '"' && textarea.value[start - 1] !== "'") {
+        start--;
+    }
+    while (end < textarea.value.length && textarea.value[end + 1] !== '"' && textarea.value[end + 1] !== "'") {
+        console.log(end)
+        end++;
+    }
+    const s = textarea.value.substring(start, end + 1);
+
+    let id;
+    if (/file\?id=\d+/.test(s)) {
+        id = substringAfterLast(s, '=');
+    } else {
+        id = /(?<=file\?id\=)\d+/.exec(textarea.value)[0]
+    }
+    if(!id) return;
+    let res;
+    try {
+        res = await fetch(`${baseUri}/svg`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: parseInt(id),
+                title: `.glsl`,
+                content:await readText()
+            })
+        });
+        if (res.status !== 200) {
+            throw new Error();
+        }
     } catch (error) {
         toast.setAttribute('message', '错误');
     }
