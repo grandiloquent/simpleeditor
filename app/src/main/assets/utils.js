@@ -15,7 +15,7 @@ if (!String.prototype.replaceAll) {
     };
 }
 
-let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.55:8090" : "..";
+let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.55:8100" : "..";
 const searchParams = new URL(window.location).searchParams;
 let id = searchParams.get('id');
 const path = searchParams.get('path');

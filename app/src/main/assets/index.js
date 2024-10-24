@@ -90,7 +90,7 @@ async function newTemplate() {
             body: JSON.stringify({
                 id: 0,
                 title: `.glsl`,
-                content: '.glsl'
+                content: await readText()
             })
         });
         if (res.status !== 200) {

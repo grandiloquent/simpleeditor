@@ -13,7 +13,12 @@ async function initializeToolbars() {
             bottomIndexs = results[1];
         }
     } catch (error) {
-        topIndexs = [15, 16, 18, 22, 20, 21, 2]
+        console.log(document.title)
+        if (document.title.endsWith(".glsl")) {
+            topIndexs = [1, 29, 14, 30, 20, 21, 2]
+        } else {
+            topIndexs = [15, 16, 18, 22, 20, 21, 2]
+        }
         bottomIndexs = [1, 3, 24, 25, 26, 27, 28]
     }
     insertItem(topIndexs, '.bar-renderer.top', 'bar-item-tab');
@@ -213,7 +218,7 @@ items.push([
     "add",
     "新建",
     () => {
-       newFile();
+        newFile();
     }
 ]);
 items.push([
@@ -248,6 +253,39 @@ items.push([
         insertSnippets();
     }
 ]);
+items.push([
+    29,
+    "edit_off",
+    "注释",
+    () => {
+        commentOut();
+    }
+]);
+items.push([
+    30,
+    "content_cut",
+    "剪行",
+    () => {
+        cutLine();
+    }
+]);
+
+function cutLine() {
+    let points = getLine(textarea);
+    let line = textarea.value.substring(points[0], points[1]).trim();
+    writeText(line);
+    textarea.setRangeText("", points[0], points[1]);
+}
+function commentOut() {
+    let points = getLine(textarea);
+    let line = textarea.value.substring(points[0], points[1]).trim();
+    if (line.startsWith("//")) {
+        line = line.substring(2).trim();
+    } else {
+        line = "// " + line;
+    }
+    textarea.setRangeText(line, points[0], points[1]);
+}
 document.addEventListener('keydown', async evt => {
     if (evt.ctrlKey) {
         if (evt.key === 's') {
@@ -288,5 +326,10 @@ document.addEventListener('keydown', async evt => {
     }
 
 })
-initializeToolbars()
-loadData();
+
+
+async function init() {
+    await loadData();
+    initializeToolbars()
+}
+init();
