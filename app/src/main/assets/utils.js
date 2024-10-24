@@ -1218,11 +1218,22 @@ function replaceString() {
 }
 let mG;
 async function newFile() {
-
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    let contents = ".glsl";
+    if (textarea.value[start - 1] === '"') {
+        while (end < textarea.value.length) {
+            if (textarea.value[end] === '"' && textarea.value[end - 1] !== '\\') {
+                break;
+            } else
+                end++;
+        }
+        contents = JSON.parse("{\"value\":\"" + textarea.value.substring(start, end) + "\"}").value;
+    }
     let body = {
         id: 0,
         title: `.glsl`,
-        content: '.glsl'
+        content: contents
     };
     // await submitNote(getBaseUri(), JSON.stringify(body));
     // document.getElementById('toast').setAttribute('message', '成功');
@@ -1243,10 +1254,26 @@ async function newFile() {
                 names: ["文件"]
             })
         });
-        textarea.setRangeText(`/file?id=${sid}`, textarea.selectionStart, textarea.selectionEnd);
+        textarea.setRangeText(`/file?id=${sid}`, start, end);
     } catch (error) {
         toast.setAttribute('message', '错误');
     }
+}
+function cutLine() {
+    let points = getLine(textarea);
+    let line = textarea.value.substring(points[0], points[1]).trim();
+    writeText(line);
+    textarea.setRangeText("", points[0], points[1]);
+}
+function commentOut() {
+    let points = getLine(textarea);
+    let line = textarea.value.substring(points[0], points[1]).trim();
+    if (line.startsWith("//")) {
+        line = line.substring(2).trim();
+    } else {
+        line = "// " + line;
+    }
+    textarea.setRangeText(line, points[0], points[1]);
 }
 async function newTemplate() {
 
@@ -1306,7 +1333,7 @@ async function saveFile() {
     } else {
         id = /(?<=file\?id\=)\d+/.exec(textarea.value)[0]
     }
-    if(!id) return;
+    if (!id) return;
     let res;
     try {
         res = await fetch(`${baseUri}/svg`, {
@@ -1314,7 +1341,7 @@ async function saveFile() {
             body: JSON.stringify({
                 id: parseInt(id),
                 title: `.glsl`,
-                content:await readText()
+                content: await readText()
             })
         });
         if (res.status !== 200) {

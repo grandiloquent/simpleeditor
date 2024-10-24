@@ -501,6 +501,20 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
 </html>)";
 
                        } else if (title.starts_with("ShaderToy")) {
+
+                           auto str = std::string{content.data(), content.size()};
+                           std::string output_text = std::regex_replace(str, std::regex(R"(/file\?id\=(\d+))"),
+                                                                        [](const std::smatch &m) {
+                                                                            static const char query[]
+                                                                                    = R"(SELECT content FROM svg where id = ?1)";
+                                                                            db::QueryResult fetch_row = db::query<query>(m.str(1));
+                                                                            std::string content;
+                                                                            if (fetch_row(content)) {
+
+                                                                                return escapeJSON(content);
+                                                                            }
+                                                                            return std::string{};
+                                                                        });
                            ss << R"(<!DOCTYPE html>
 <html lang="en">
 
@@ -527,7 +541,7 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
     <script src="15.js"></script>
     <script src="16.js"></script>
     <script>
-        const obj =)" << content << R"(
+        const obj =)" << output_text << R"(
         watchInit(obj)
     </script>
 </body>

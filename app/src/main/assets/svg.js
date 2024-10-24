@@ -270,22 +270,7 @@ items.push([
     }
 ]);
 
-function cutLine() {
-    let points = getLine(textarea);
-    let line = textarea.value.substring(points[0], points[1]).trim();
-    writeText(line);
-    textarea.setRangeText("", points[0], points[1]);
-}
-function commentOut() {
-    let points = getLine(textarea);
-    let line = textarea.value.substring(points[0], points[1]).trim();
-    if (line.startsWith("//")) {
-        line = line.substring(2).trim();
-    } else {
-        line = "// " + line;
-    }
-    textarea.setRangeText(line, points[0], points[1]);
-}
+
 document.addEventListener('keydown', async evt => {
     if (evt.ctrlKey) {
         if (evt.key === 's') {
@@ -329,7 +314,11 @@ document.addEventListener('keydown', async evt => {
 
 
 async function init() {
-    await loadData();
+    try {
+        await loadData();
+    } catch (error) {
+    }
+    if (!results) return;
     initializeToolbars()
 }
 init();
