@@ -318,7 +318,6 @@ async function init() {
         await loadData();
     } catch (error) {
     }
-    if (!results) return;
     initializeToolbars()
 }
 init();
