@@ -340,13 +340,12 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
         res.set_header("Access-Control-Allow-Origin", "*");
         auto t = req.get_param_value("t");
         static const char query[]
-                = R"(SELECT content,keyword,id FROM snippet where type = ?1 ORDER BY views)";
+                = R"(SELECT keyword,id FROM snippet where type = ?1 ORDER BY views)";
         db::QueryResult fetch_row = db::query<query>(t);
-        std::string_view content, keyword, id;
+        std::string_view keyword, id;
         nlohmann::json doc = nlohmann::json::array();
-        while (fetch_row(content, keyword, id)) {
+        while (fetch_row(keyword, id)) {
             nlohmann::json j = {
-                    {"content", content},
                     {"keyword", keyword},
                     {"id",      id}
             };

@@ -1181,7 +1181,7 @@ function copyCode() {
 }
 let snippets = null;
 async function insertSnippets() {
-    let start = textarea.selectionStart;
+    /*let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
     while (start - 1 > -1 && !/\s/.test(textarea.value[start - 1])) {
         start--;
@@ -1203,6 +1203,28 @@ async function insertSnippets() {
     let value = snippets[s];
     if (value) {
         textarea.setRangeText(value, start, end);
+    }*/
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    while (start - 1 > -1 && !/\s/.test(textarea.value[start - 1])) {
+        start--;
+    }
+    while (end < textarea.value.length && !/\s/.test(textarea.value[end])) {
+        end++;
+    }
+    let s = textarea.value.substring(start, end);
+
+    try {
+        const response = await fetch(`${baseUri}/snippet?k=${encodeURIComponent(s)}&t=0`);
+        if (response.status > 399 || response.status < 200) {
+            throw new Error(`${response.status}: ${response.statusText}`)
+        }
+        const results = await response.text();
+        if (results) {
+            textarea.setRangeText(results, start, end);
+        }
+    } catch (error) {
+        console.log(error);
     }
 }
 

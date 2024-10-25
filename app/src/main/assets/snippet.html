@@ -78,7 +78,7 @@
     </div>
 </body>
 <script>
-    let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.55:8090" : "";
+    let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.55:8100" : "";
     const button = document.querySelector("button");
     const textarea = document.querySelector("textarea");
     const searchParam = new URL(window.location).searchParams;
@@ -96,10 +96,10 @@
             const keyword = document.createElement("div");
             keyword.textContent = x.keyword;
             container.appendChild(keyword);
-            const content = document.createElement("div");
-            content.style = `-webkit-line-clamp:2;display:-webkit-box;text-overflow:ellipsis;font-size:16px;max-height:4.4em;line-height:24px;overflow:hidden;max-width:100%`
-            content.textContent = x.content;
-            container.appendChild(content);
+            // const content = document.createElement("div");
+            // content.style = `-webkit-line-clamp:2;display:-webkit-box;text-overflow:ellipsis;font-size:16px;max-height:4.4em;line-height:24px;overflow:hidden;max-width:100%`
+            // content.textContent = x.content;
+            // container.appendChild(content);
 
             keyword.addEventListener("click", () => {
                 textarea.value = x.id;
