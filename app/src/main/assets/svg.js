@@ -15,7 +15,7 @@ async function initializeToolbars() {
     } catch (error) {
         console.log(document.title)
         if (document.title.endsWith(".glsl")) {
-            topIndexs = [1, 29, 14, 30, 20, 21, 2]
+            topIndexs = [1, 29, 14, 21, 30, 20, 2]
         } else {
             topIndexs = [15, 16, 18, 22, 20, 21, 2]
         }
@@ -194,7 +194,7 @@ items.push([
     "clear",
     "删除",
     () => {
-        deleteBlock()
+        cutLine(textarea);
     }
 ]);
 items.push([
