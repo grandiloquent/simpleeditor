@@ -13,7 +13,7 @@ async function initializeToolbars() {
             bottomIndexs = results[1];
         }
     } catch (error) {
-        topIndexs = [1, 29, 14, 30, 20, 2]
+        topIndexs = [1, 29, 14, 30, 20, 32, 2]
         // if (document.title.endsWith(".glsl")) {
         //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
         // } else {
@@ -22,7 +22,7 @@ async function initializeToolbars() {
         if (document.title.endsWith(".glsl")) {
             bottomIndexs = [1, 3, 24, 25, 28]
         } else {
-            bottomIndexs = [3, 28, 25, 31,22]
+            bottomIndexs = [3, 28, 25, 31, 22]
         }
 
     }
@@ -162,6 +162,14 @@ const items = [
     ],
 ];
 
+items.push([
+    32,
+    "sort_by_alpha",
+    "排序",
+    () => {
+        sortJavaScriptFunctions()
+    }
+]);
 items.push([
     31,
     "variable_add",

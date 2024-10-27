@@ -1389,7 +1389,7 @@ async function saveFile() {
 function addVariable() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
-    while (start - 1 > -1 && /[A-Za-z0-9_]+/.test(textarea.value[start-1])) {
+    while (start - 1 > -1 && /[A-Za-z0-9_]+/.test(textarea.value[start - 1])) {
         start--;
     }
     while (end < textarea.value.length && /[A-Za-z0-9_]+/.test(textarea.value[end])) {
@@ -1397,10 +1397,46 @@ function addVariable() {
     }
     const s = textarea.value.substring(start, end);
     start = textarea.selectionStart;
-    while (start - 1 > -1 && textarea.value[start-1] != '\n') {
+    while (start - 1 > -1 && textarea.value[start - 1] != '\n') {
         start--;
     }
     textarea.setRangeText(`let ${s} = 0.1;// " ";
 `, start, start);
 
+}
+function toBlocks(string) {
+    let count = 0;
+    let buf = [];
+    const blocks = [];
+    for (let i = 0; i < string.length; i++) {
+        buf.push(string[i])
+        if (string[i] === '{') {
+            count++;
+        } else if (string[i] === '}') {
+            count--;
+            if (count === 0) {
+                blocks.push(buf.join(''))
+                buf = [];
+            }
+        }
+    }
+    return blocks;
+}
+
+function sortFunctions(string) {
+    return toBlocks(string)
+        .sort((x, y) => {
+            return substringAfterLast(substringBefore(substringBefore(x, '('),'=').trim(), ' ').localeCompare(substringAfterLast(substringBefore(y, '(').trim(), ' '))
+        }).join('');
+}
+
+function sortJavaScriptFunctions() {
+    const start = textarea.selectionStart;
+    let s = textarea.value.substring(start).trim();
+    let before=substringBeforeLast(s,'\n');
+    let after=substringAfterLast(s,'\n');
+    let results = sortFunctions(before);
+    textarea.setRangeText(`${results}
+
+${after}`, start, textarea.value.length);
 }
