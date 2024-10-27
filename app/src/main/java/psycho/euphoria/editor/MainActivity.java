@@ -353,6 +353,7 @@ public class MainActivity extends Activity {
         menuItem1.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         menu.add(0, 5, 0, "打开");
+        menu.add(0, 10, 0, "人工智能");
         menu.add(0, 6, 0, "收藏");
         menu.add(0, 7, 0, "历史");
         return super.onCreateOptionsMenu(menu);
@@ -421,6 +422,9 @@ public class MainActivity extends Activity {
                 mWebView4.setVisibility(View.VISIBLE);
                 if (mWebView4.getUrl() == null || !mWebView4.getUrl().startsWith("http://0.0.0.0:8100"))
                     mWebView4.loadUrl("http://0.0.0.0:8100");
+                break;
+            case 10:
+                webView.loadUrl("https://gemini.google.com/");
                 break;
         }
         return super.onOptionsItemSelected(item);
