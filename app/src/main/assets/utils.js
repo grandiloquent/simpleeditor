@@ -1454,7 +1454,7 @@ ${after}`, start, textarea.value.length);
 function copyName(){
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
-    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start])) {
+    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start-1])) {
         start--;
     }
     while (end < textarea.value.length && /[A-Za-z0-9_]/.test(textarea.value[end])) {
