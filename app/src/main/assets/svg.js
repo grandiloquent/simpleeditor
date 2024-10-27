@@ -22,7 +22,7 @@ async function initializeToolbars() {
         if (document.title.endsWith(".glsl")) {
             bottomIndexs = [1, 3, 24, 25, 28]
         } else {
-            bottomIndexs = [3, 28, 25, 31, 22]
+            bottomIndexs = [3, 28, 25, 31, 33, 22]
         }
 
     }
@@ -162,6 +162,14 @@ const items = [
     ],
 ];
 
+items.push([
+    33,
+    "content_copy",
+    "复字",
+    () => {
+        copyName()
+    }
+]);
 items.push([
     32,
     "sort_by_alpha",

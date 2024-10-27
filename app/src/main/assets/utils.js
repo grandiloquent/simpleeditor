@@ -1160,12 +1160,20 @@ function fun(textarea) {
     let points = findExtendPosition(textarea);
     let s = textarea.value.substring(points[0], points[1]);
 
-    let name = substringBefore(s, '\n')
-    textarea.value += `
-function ${name}(){
+    let name = substringBefore(s, '\n').trim();
+    let parts = [];
+    if (name.indexOf(' ') !== -1) {
+        parts = name.split(' ');
+        name = parts[0];
+        parts = parts.slice(1);
+    }
+    s = `
+function ${name}(${parts.join(',')}){
     ${substringAfter(s, '\n')}
-    }`
-    textarea.setRangeText(`${name}();`, points[0], points[1]);
+    }`;
+    let start = points[0];
+    writeText(s);
+    textarea.setRangeText(`${name}(${parts.join(',')});`, points[0], points[1]);
 }
 
 function copyCode() {
@@ -1424,21 +1432,34 @@ function toBlocks(string) {
 }
 
 function sortFunctions(string) {
-    let blocks= toBlocks(string);
+    let blocks = toBlocks(string);
     return blocks
         .sort((x, y) => {
-            return substringAfterLast(substringBefore(substringBefore(x, '('),'=').trim(), ' ')
-            .localeCompare(substringAfterLast(substringBefore(substringBefore(y, '('),'=').trim(), ' '))
+            return substringAfterLast(substringBefore(substringBefore(x, '('), '=').trim(), ' ')
+                .localeCompare(substringAfterLast(substringBefore(substringBefore(y, '('), '=').trim(), ' '))
         }).join('');
 }
 
 function sortJavaScriptFunctions() {
     const start = textarea.selectionStart;
     let s = textarea.value.substring(start).trim();
-    let before=substringBeforeLast(s,'\n');
-    let after=substringAfterLast(s,'\n');
+    let before = substringBeforeLast(s, '\n');
+    let after = substringAfterLast(s, '\n');
     let results = sortFunctions(before);
     textarea.setRangeText(`${results}
 
 ${after}`, start, textarea.value.length);
+}
+
+function copyName(){
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start])) {
+        start--;
+    }
+    while (end < textarea.value.length && /[A-Za-z0-9_]/.test(textarea.value[end])) {
+        end++;
+    }
+    let s = textarea.value.substring(start, end);
+    writeText(s)
 }
