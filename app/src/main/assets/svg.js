@@ -13,13 +13,18 @@ async function initializeToolbars() {
             bottomIndexs = results[1];
         }
     } catch (error) {
-        console.log(document.title)
+        topIndexs = [1, 29, 14, 30, 20, 2]
+        // if (document.title.endsWith(".glsl")) {
+        //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
+        // } else {
+        //     topIndexs = [15, 16, 18, 22, 20, 21, 2]
+        // }
         if (document.title.endsWith(".glsl")) {
-            topIndexs = [1, 29, 14, 21, 30, 20, 2]
+            bottomIndexs = [1, 3, 24, 25, 28]
         } else {
-            topIndexs = [15, 16, 18, 22, 20, 21, 2]
+            bottomIndexs = [3, 28, 25, 31,22]
         }
-        bottomIndexs = [1, 3, 24, 25, 26, 27, 28]
+
     }
     insertItem(topIndexs, '.bar-renderer.top', 'bar-item-tab');
     insertItem(bottomIndexs, '.bar-renderer.bottom', 'bar-item-tab');
@@ -157,6 +162,14 @@ const items = [
     ],
 ];
 
+items.push([
+    31,
+    "variable_add",
+    "变量",
+    () => {
+        addVariable();
+    }
+]);
 items.push([
     17,
     "download",

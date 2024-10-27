@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        (() => {
+            let message;
+            function redirectLog() {
+                console.log = (str) => {
+                    if (!message) {
+                        message = document.createElement('div');
+                        message.style.position = 'fixed';
+                        message.style.bottom = '0';
+                        message.style.left = '0';
+                        message.style.right = '0';
+                        message.style.maxHeight = '50vh';
+                        message.style.background='#fff';
+                        message.style.overflow = 'auto';
+                        document.body.appendChild(message);
+                    }
+                    message.innerHTML = `${message.innerHTML}<div>${str}</div>`;
+                }
+            }
+            redirectLog();
+        })();
+    </script>
+</body>
+
+</html>

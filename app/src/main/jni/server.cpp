@@ -476,7 +476,7 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         )" <<
-                              content <<
+                              str <<
                               R"(
 
     </script>

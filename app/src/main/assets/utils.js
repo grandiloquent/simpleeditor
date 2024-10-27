@@ -178,11 +178,24 @@ function formatCode() {
     const options = { indent_size: 2 }
     if (document.title.startsWith("Three") || document.title.startsWith("GLSL")) {
         if (textarea.value.indexOf("</script>") !== -1) {
-            const start = substringBeforeLast(textarea.value, '</script>');
-            const end = substringAfterLast(textarea.value, '</script>');
-            textarea.value = start + "</script>\n" + js_beautify(end, options);
+            const s = textarea.value.trim();
+            const before = substringBefore(s, '\n').trim();
+            const after = substringAfter(s, '\n').split('\n').filter(x => x.trim()).join('\n').trim();
+
+            const start = substringBeforeLast(after, '</script>');
+            const end = substringAfterLast(after, '</script>');
+            //textarea.value = start + "</script>\n" + js_beautify(end, options);
+            textarea.value = `${before} 
+${start}</script>
+${js_beautify(end, options)}`;
         } else {
-            textarea.value = js_beautify(textarea.value, options);
+            const s = textarea.value.trim();
+            const before = substringBefore(s, '\n').trim();
+            const after = substringAfter(s, '\n').split('\n').filter(x => x.trim()).join('\n').trim();
+            //textarea.value = js_beautify(textarea.value, options);
+            textarea.value = `${before} 
+        
+${js_beautify(after, options)}`;
         }
 
     } else if (document.title.endsWith(".glsl")) {
@@ -1372,4 +1385,22 @@ async function saveFile() {
     } catch (error) {
         toast.setAttribute('message', '错误');
     }
+}
+function addVariable() {
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    while (start - 1 > -1 && /[A-Za-z0-9_]+/.test(textarea.value[start-1])) {
+        start--;
+    }
+    while (end < textarea.value.length && /[A-Za-z0-9_]+/.test(textarea.value[end])) {
+        end++;
+    }
+    const s = textarea.value.substring(start, end);
+    start = textarea.selectionStart;
+    while (start - 1 > -1 && textarea.value[start-1] != '\n') {
+        start--;
+    }
+    textarea.setRangeText(`let ${s} = 0.1;// " ";
+`, start, start);
+
 }
