@@ -1424,9 +1424,11 @@ function toBlocks(string) {
 }
 
 function sortFunctions(string) {
-    return toBlocks(string)
+    let blocks= toBlocks(string);
+    return blocks
         .sort((x, y) => {
-            return substringAfterLast(substringBefore(substringBefore(x, '('),'=').trim(), ' ').localeCompare(substringAfterLast(substringBefore(y, '(').trim(), ' '))
+            return substringAfterLast(substringBefore(substringBefore(x, '('),'=').trim(), ' ')
+            .localeCompare(substringAfterLast(substringBefore(substringBefore(y, '('),'=').trim(), ' '))
         }).join('');
 }
 
