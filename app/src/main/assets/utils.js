@@ -1250,14 +1250,22 @@ async function insertSnippets() {
 }
 
 function replaceString() {
-    let points = findExtendPosition(textarea);
+    /*let points = findExtendPosition(textarea);
     let s = textarea.value.substring(points[0], points[1]).trim();
 
     let before = substringBefore(s, '\n').trim();
     let after = substringAfter(s, '\n').trim();
     let parts = before.split('|');
     after = after.replaceAll(parts[0], parts[1]);
-    textarea.setRangeText(after, points[0], points[1]);
+    textarea.setRangeText(after, points[0], points[1]);*/
+    let points = getLine(textarea);
+    let s = textarea.value.substring(points[0], points[1]).trim();
+
+    let before = s;
+    let find = before.indexOf(' ') === -1 ? before : substringBefore(before, ' ');
+    let replace = before.indexOf(' ') === -1 ? '' : substringAfter(before, ' ');
+    textarea.value = textarea.value.replaceAll(new RegExp("\\b" + find + "\\b", 'g'), replace);
+    //textarea.setRangeText(after, points[0], points[1]);
 }
 let mG;
 async function newFile() {
@@ -1395,7 +1403,7 @@ async function saveFile() {
     }
 }
 function addVariable() {
-    let start = textarea.selectionStart;
+    /*let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
     while (start - 1 > -1 && /[A-Za-z0-9_]+/.test(textarea.value[start - 1])) {
         start--;
@@ -1410,7 +1418,138 @@ function addVariable() {
     }
     textarea.setRangeText(`let ${s} = 0.1;// " ";
 `, start, start);
+*/
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    const c = textarea.value[start];
+    if (/[0-9.]/.test(c)) {
+        while (start - 1 > -1 && /[0-9.]+/.test(textarea.value[start - 1])) {
+            start--;
+        }
+        while (end < textarea.value.length && /[0-9.]+/.test(textarea.value[end])) {
+            end++;
+        }
+        const s = textarea.value.substring(start, end);
+        start = textarea.selectionStart;
+        while (start - 1 > -1 && textarea.value[start - 1] != '\n') {
+            start--;
+        }
+        let sp = textarea.selectionStart;
+        let ep = textarea.selectionEnd;
+        let count = 0;
+        while (sp - 1 > -1) {
+            if (textarea.value[sp] === '}') {
+                count++;
+            } else if (textarea.value[sp] === '{') {
+                if (count === 0) {
+                    sp++;
+                    break;
+                }
+                count--;
+            }
+            sp--;
+        }
+        count = 0;
+        while (ep < textarea.value.length) {
+            if (textarea.value[ep] === '}') {
+                if (count === 0) {
+                    break;
+                }
+                count--;
+            } else if (textarea.value[ep] === '{') {
 
+                count++;
+            }
+            ep++;
+        }
+        let str = textarea.value.substring(sp, ep);
+        let name = "n1";
+        let i = 1;
+        while (new RegExp(name).test(str)) {
+            i++;
+            name = `n${i}`;
+        }
+        textarea.setRangeText(`
+let ${name} = ${s};
+            ${str.replaceAll(new RegExp("\\b" + s + "\\b", "g"), name)}
+`, sp, ep);
+    } else if (/[A-Za-z_]/.test(c)) {
+        let count = 0;
+        while (start - 1 > -1) {
+            if (textarea.value[start] === ')') {
+                count++;
+            } else if (textarea.value[start] === '(') {
+                if (count === 0) {
+                    start++;
+                    break;
+                }
+                count--;
+            }else if (count===0 && textarea.value[start] ===','){
+                start++;
+                break;
+            }
+            start--;
+        }
+        count = 0;
+        while (end < textarea.value.length) {
+            if (textarea.value[end] === ')') {
+                if (count === 0) {
+                    break;
+                }
+                count--;
+            } else if (textarea.value[end] === '(') {
+
+                count++;
+            }else if (count===0 && textarea.value[end] ===','){
+                break;
+            }
+            end++;
+        }
+        const s = textarea.value.substring(start, end);
+        start = textarea.selectionStart;
+        while (start - 1 > -1 && textarea.value[start - 1] != '\n') {
+            start--;
+        }
+        let sp = textarea.selectionStart;
+        let ep = textarea.selectionEnd;
+        count = 0;
+        while (sp - 1 > -1) {
+            if (textarea.value[sp] === '}') {
+                count++;
+            } else if (textarea.value[sp] === '{') {
+                if (count === 0) {
+                    sp++;
+                    break;
+                }
+                count--;
+            }
+            sp--;
+        }
+        count = 0;
+        while (ep < textarea.value.length) {
+            if (textarea.value[ep] === '}') {
+                if (count === 0) {
+                    break;
+                }
+                count--;
+            } else if (textarea.value[ep] === '{') {
+
+                count++;
+            }
+            ep++;
+        }
+        let str = textarea.value.substring(sp, ep);
+        let name = "n1";
+        let i = 1;
+        while (new RegExp(name).test(str)) {
+            i++;
+            name = `n${i}`;
+        }
+        textarea.setRangeText(`
+let ${name} = ${s};
+            ${str.replaceAll(s, name)}
+`, sp, ep);
+    }
 }
 function toBlocks(string) {
     let count = 0;
@@ -1451,10 +1590,10 @@ function sortJavaScriptFunctions() {
 ${after}`, start, textarea.value.length);
 }
 
-function copyName(){
+function copyName() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
-    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start-1])) {
+    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start - 1])) {
         start--;
     }
     while (end < textarea.value.length && /[A-Za-z0-9_]/.test(textarea.value[end])) {
