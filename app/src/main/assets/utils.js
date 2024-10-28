@@ -1326,42 +1326,76 @@ function commentOut() {
     }
     textarea.setRangeText(line, points[0], points[1]);
 }
-async function newTemplate() {
+async function newScript() {
+    let title, content, start, end, id = 0;
+    let c = textarea.value.substring(textarea.selectionStart,
+        textarea.selectionStart + "<style".length);
+    console.log(c)
+    if (c === "<style") {
+        start = textarea.selectionStart;
+        end = start;
+        while (end < textarea.value.length) {
 
+            if (textarea.value[end] === '<' && textarea.value.substring(end,
+                end + 8
+            ) === "</style>") {
+                end += 8;
+                break;
+            }
+            end++
+        }
+        content = textarea.value.substring(start + 7, end - 8);
+        title = ".css";
+    } else {
+        let points = findExtendPosition(textarea);
+        content = textarea.value.substring(points[0], points[1]).trim();
+        start = points[0];
+        end = points[1];
+        title = ".js";
+        let m = /(?<=src=\"\/file\?id\=)\d+/.exec(textarea.value)
+        id = (m && parseInt(m[0])) || 0;
+    }
 
-    // await submitNote(getBaseUri(), JSON.stringify(body));
-    // document.getElementById('toast').setAttribute('message', '成功');
     let res;
     try {
+        if (id) {
+            res = await fetch(`${baseUri}/svg?id=${id}`);
+            const obj = await res.json();
+            content = `${obj.content}
+            
+${content}`
+        }
         res = await fetch(`${baseUri}/svg`, {
             method: 'POST',
             body: JSON.stringify({
-                id: 0,
-                title: `.glsl`,
-                content: '.glsl'
+                id: id,
+                title: title,
+                content: content
             })
         });
         if (res.status !== 200) {
             throw new Error();
         }
         let sid = await res.text();
-        res = await fetch(`${baseUri}/svgtag`, {
-            method: 'POST',
-            body: JSON.stringify({
-                id: parseInt(sid),
-                names: ["文件"]
-            })
-        });
-        mG = mG || await (await fetch("/g.txt")).text();
-        res = await fetch(`${baseUri}/svg`, {
-            method: 'POST',
-            body: JSON.stringify({
-                id: 0,
-                title: `GLSL ${sid}`,
-                content: `${mG.replace(/id=\d+/, `id=${sid}`)}`
-            })
-        });
+        if (id === 0)
+            res = await fetch(`${baseUri}/svgtag`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: parseInt(sid),
+                    names: ["文件"]
+                })
+            });
+        if (title === '.css') {
+            textarea.setRangeText(`<link rel="stylesheet" href="/file?id=${sid}">`, start, end);
+        } else {
+            if (id === 0)
+                textarea.setRangeText(`<script src="/file?id=${sid}"></script>`, start, end);
+            else {
+                textarea.setRangeText(``, start, end);
+            }
+        }
     } catch (error) {
+        console.error(error);
         toast.setAttribute('message', '错误');
     }
 }
@@ -1484,7 +1518,7 @@ let ${name} = ${s};
                     break;
                 }
                 count--;
-            }else if (count===0 && textarea.value[start] ===','){
+            } else if (count === 0 && textarea.value[start] === ',') {
                 start++;
                 break;
             }
@@ -1500,7 +1534,7 @@ let ${name} = ${s};
             } else if (textarea.value[end] === '(') {
 
                 count++;
-            }else if (count===0 && textarea.value[end] ===','){
+            } else if (count === 0 && textarea.value[end] === ',') {
                 break;
             }
             end++;
