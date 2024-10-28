@@ -199,7 +199,7 @@ ${js_beautify(after, options)}`;
         }
 
     } else if (document.title.startsWith("JavaScript")) {
-        textarea.value = html_beautify(end, options)
+        textarea.value = html_beautify(textarea.value, options)
     } else if (document.title.endsWith(".glsl")) {
         const s = textarea.value.trim();
         const before = substringBefore(s, '\n').trim();
@@ -1330,10 +1330,10 @@ function commentOut() {
 }
 async function newScript() {
     let title, content, start, end, id = 0;
-    let c = textarea.value.substring(textarea.selectionStart,
-        textarea.selectionStart + "<style".length);
-    console.log(c)
-    if (c === "<style") {
+
+
+    if (textarea.value.substring(textarea.selectionStart,
+        textarea.selectionStart + "<style".length) === "<style") {
         start = textarea.selectionStart;
         end = start;
         while (end < textarea.value.length) {
@@ -1348,6 +1348,39 @@ async function newScript() {
         }
         content = textarea.value.substring(start + 7, end - 8);
         title = ".css";
+    } else if (textarea.value.substring(textarea.selectionStart,
+        textarea.selectionStart + "<script".length)) {
+        start = textarea.selectionStart;
+        end = start;
+        while (end < textarea.value.length) {
+
+            if (textarea.value[end] === '<' && textarea.value.substring(end,
+                end + 9
+            ) === "</script>") {
+                end += 9;
+                break;
+            }
+            end++
+        }
+        let startIndex = start;
+        while (startIndex < textarea.value.length) {
+
+            if (textarea.value[startIndex] === '>') {
+                startIndex++
+                break;
+            }
+            startIndex++
+        }
+        content = textarea.value.substring(startIndex, end - 9);
+        const body = textarea.value.substring(start, end);
+        if (body.indexOf("x-shader/x-fragment") === -1 && body.indexOf("x-shader/x-vertex") === -1) {
+            return;
+        }
+        if (body.indexOf("x-shader/x-fragment") !== -1)
+            title = "fragment.glsl";
+        else
+            title = "vertex.glsl";
+       
     } else {
         let points = findExtendPosition(textarea);
         content = textarea.value.substring(points[0], points[1]).trim();
@@ -1389,6 +1422,8 @@ ${content}`
             });
         if (title === '.css') {
             textarea.setRangeText(`<link rel="stylesheet" href="/file?id=${sid}">`, start, end);
+        }else if(title.endsWith('.glsl')){
+            textarea.setRangeText(`// await(await fetch('/file?id=${sid}')).text(),// ${title}`, start, end);
         } else {
             if (id === 0)
                 textarea.setRangeText(`<script src="/file?id=${sid}"></script>`, start, end);
