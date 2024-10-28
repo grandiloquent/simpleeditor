@@ -198,6 +198,8 @@ ${js_beautify(end, options)}`;
 ${js_beautify(after, options)}`;
         }
 
+    } else if (document.title.startsWith("JavaScript")) {
+        textarea.value = html_beautify(end, options)
     } else if (document.title.endsWith(".glsl")) {
         const s = textarea.value.trim();
         const before = substringBefore(s, '\n').trim();
