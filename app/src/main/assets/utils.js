@@ -1169,6 +1169,9 @@ function fun(textarea) {
         name = parts[0];
         parts = parts.slice(1);
     }
+    if(!/A-Z/.test(name)) {
+        name= `create${name.substring(0,1).toUpperCase()}${name.slice(1)}`
+    }
     s = `
 function ${name}(${parts.join(',')}){
     ${substringAfter(s, '\n')}
@@ -1349,7 +1352,7 @@ async function newScript() {
         content = textarea.value.substring(start + 7, end - 8);
         title = ".css";
     } else if (textarea.value.substring(textarea.selectionStart,
-        textarea.selectionStart + "<script".length)) {
+        textarea.selectionStart + "<script".length)==='<script') {
         start = textarea.selectionStart;
         end = start;
         while (end < textarea.value.length) {

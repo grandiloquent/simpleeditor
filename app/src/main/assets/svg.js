@@ -13,7 +13,7 @@ async function initializeToolbars() {
             bottomIndexs = results[1];
         }
     } catch (error) {
-        topIndexs = [1, 29, 14, 30, 20, 32, 2]
+        topIndexs = [1, 29, 14, 30, 20, 32, 16, 2]
         // if (document.title.endsWith(".glsl")) {
         //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
         // } else {
@@ -22,7 +22,7 @@ async function initializeToolbars() {
         if (document.title.endsWith(".glsl")) {
             bottomIndexs = [1, 3, 24, 25, 28]
         } else {
-            bottomIndexs = [3, 28, 31, 33, 22,35, 25, 34]
+            bottomIndexs = [3, 28, 31, 33, 22, 35, 25, 34]
         }
 
     }
@@ -166,7 +166,7 @@ items.push([
     "search",
     "搜索",
     () => {
-       search();
+        search();
     }
 ]);
 items.push([
