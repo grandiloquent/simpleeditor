@@ -1673,3 +1673,28 @@ function copyName() {
     let s = textarea.value.substring(start, end);
     writeText(s)
 }
+function search(){
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start - 1])) {
+        start--;
+    }
+    while (end < textarea.value.length && /[A-Za-z0-9_]/.test(textarea.value[end])) {
+        end++;
+    }
+    let s = textarea.value.substring(start, end);
+    
+    let index = textarea.value.indexOf(s, textarea.selectionEnd);
+    if (index === -1)
+        index = textarea.value.indexOf(s);
+
+    textarea.focus();
+    textarea.scrollTop = 0;
+    const fullText = textarea.value;
+    textarea.value = fullText.substring(0, index + s.length);
+    textarea.scrollTop = textarea.scrollHeight;
+    textarea.value = fullText;
+
+    textarea.selectionStart = index;
+    textarea.selectionEnd = index + s.length;
+}

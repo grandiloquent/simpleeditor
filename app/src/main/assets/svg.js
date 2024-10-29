@@ -22,7 +22,7 @@ async function initializeToolbars() {
         if (document.title.endsWith(".glsl")) {
             bottomIndexs = [1, 3, 24, 25, 28]
         } else {
-            bottomIndexs = [3, 28, 31, 33, 22, 25, 34]
+            bottomIndexs = [3, 28, 31, 33, 22,35, 25, 34]
         }
 
     }
@@ -104,7 +104,7 @@ const items = [
         }
     ], [
         9,
-        "search",
+        "find_replace",
         "搜索",
         () => {
             searchWord(textarea);
@@ -161,7 +161,14 @@ const items = [
         }
     ],
 ];
-
+items.push([
+    35,
+    "search",
+    "搜索",
+    () => {
+       search();
+    }
+]);
 items.push([
     34,
     "add",
@@ -260,7 +267,7 @@ items.push([
 ]);
 items.push([
     25,
-    "search",
+    "find_replace",
     "搜索",
     () => {
         replaceString()
