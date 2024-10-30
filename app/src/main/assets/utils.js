@@ -15,7 +15,7 @@ if (!String.prototype.replaceAll) {
     };
 }
 
-let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.55:8100" : "..";
+let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.161:8100" : "..";
 const searchParams = new URL(window.location).searchParams;
 let id = searchParams.get('id');
 const path = searchParams.get('path');
@@ -873,6 +873,26 @@ async function loadTags() {
     return res.json();
 }
 async function updateTags() {
+    let res;
+    let matches = /JavaScript|GLSL|Three/.exec(textarea.value);
+    if (matches) {
+        try {
+            res = await fetch(`${baseUri}/svgtag`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    id:parseInt(id),
+                    names:[matches[0]]
+                })
+            });
+            if (res.status !== 200) {
+                throw new Error();
+            }
+            toast.setAttribute('message', '成功');
+        } catch (error) {
+            toast.setAttribute('message', '错误');
+        }
+        return;
+    }
     const dialog = document.createElement('custom-dialog');
     const div = document.createElement('textarea');
     div.style = `
@@ -905,7 +925,7 @@ async function updateTags() {
             id: nid,
             names: [...new Set(s.split(',').map(x => x.trim()).filter(x => x))]
         };
-        let res;
+
         try {
             res = await fetch(`${baseUri}/svgtag`, {
                 method: 'POST',
@@ -1169,8 +1189,8 @@ function fun(textarea) {
         name = parts[0];
         parts = parts.slice(1);
     }
-    if(!/A-Z/.test(name)) {
-        name= `create${name.substring(0,1).toUpperCase()}${name.slice(1)}`
+    if (!/A-Z/.test(name)) {
+        name = `create${name.substring(0, 1).toUpperCase()}${name.slice(1)}`
     }
     s = `
 function ${name}(${parts.join(',')}){
@@ -1352,7 +1372,7 @@ async function newScript() {
         content = textarea.value.substring(start + 7, end - 8);
         title = ".css";
     } else if (textarea.value.substring(textarea.selectionStart,
-        textarea.selectionStart + "<script".length)==='<script') {
+        textarea.selectionStart + "<script".length) === '<script') {
         start = textarea.selectionStart;
         end = start;
         while (end < textarea.value.length) {
@@ -1383,7 +1403,7 @@ async function newScript() {
             title = "fragment.glsl";
         else
             title = "vertex.glsl";
-       
+
     } else {
         let points = findExtendPosition(textarea);
         content = textarea.value.substring(points[0], points[1]).trim();
@@ -1425,7 +1445,7 @@ ${content}`
             });
         if (title === '.css') {
             textarea.setRangeText(`<link rel="stylesheet" href="/file?id=${sid}">`, start, end);
-        }else if(title.endsWith('.glsl')){
+        } else if (title.endsWith('.glsl')) {
             textarea.setRangeText(`// await(await fetch('/file?id=${sid}')).text(),// ${title}`, start, end);
         } else {
             if (id === 0)
@@ -1676,7 +1696,7 @@ function copyName() {
     let s = textarea.value.substring(start, end);
     writeText(s)
 }
-function search(){
+function search() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
     while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start - 1])) {
@@ -1686,7 +1706,7 @@ function search(){
         end++;
     }
     let s = textarea.value.substring(start, end);
-    
+
     let index = textarea.value.indexOf(s, textarea.selectionEnd);
     if (index === -1)
         index = textarea.value.indexOf(s);
