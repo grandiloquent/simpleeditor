@@ -326,7 +326,7 @@ items.push([
     "content_cut",
     "剪行",
     () => {
-        cutLine();
+        deleteLine();
     }
 ]);
 
