@@ -840,12 +840,14 @@ function deleteLine(textarea) {
     while (start - 1 > -1 && textarea.value[start - 1] !== '\n') {
         start--;
     }
-    while (end + 1 < textarea.value.length && textarea.value[end + 1] !== ';') {
+    while (end + 1 < textarea.value.length && textarea.value[end] !== ';') {
         end++;
     }
-    let s = textarea.value.substring(start, end).trim();
+
+    let s = textarea.value.substring(start, end + 1).trim();
     writeText(s);
-    textarea.setRangeText("", start,end);
+    textarea.setRangeText("", start, end + 1);
+
 
 }
 function copyLine(textarea) {
@@ -895,11 +897,11 @@ ${s.replace(/\b[a-zA-Z_]+[0-9]+\b/g, v => {
     while (start - 1 > -1 && textarea.value[start - 1] !== '\n') {
         start--;
     }
-    while (end + 1 < textarea.value.length && textarea.value[end + 1] !== ';') {
+    while (end + 1 < textarea.value.length && textarea.value[end] !== ';') {
         end++;
     }
-    let s = textarea.value.substring(start, end).trim();
-    textarea.setRangeText(s, end, end);
+    let s = textarea.value.substring(start, end + 1).trim();
+    textarea.setRangeText("\n" + s, end + 1, end + 1);
 
 }
 async function loadTags() {
