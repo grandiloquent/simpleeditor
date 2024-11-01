@@ -818,21 +818,38 @@ async function translate(textarea) {
     }
 }
 function deleteLine(textarea) {
-    if (textarea.value[textarea.selectionStart] === '{' || textarea.value[textarea.selectionStart - 1] === '{') {
-        const points = getBlock(textarea);
-        let s = textarea.value.substring(points[0], points[1]).trim();
-        writeText(s);
-        textarea.setRangeText("", points[0], points[1]);
-    } else {
-        const points = getLine(textarea);
-        let s = textarea.value.substring(points[0], points[1]).trim();
-        writeText(s);
-        textarea.setRangeText("", points[0], points[1]);
+    // if (textarea.value[textarea.selectionStart] === '{' || textarea.value[textarea.selectionStart - 1] === '{') {
+    //     const points = getBlock(textarea);
+    //     let s = textarea.value.substring(points[0], points[1]).trim();
+    //     writeText(s);
+    //     textarea.setRangeText("", points[0], points[1]);
+    // } else {
+    //     const points = getLine(textarea);
+    //     let s = textarea.value.substring(points[0], points[1]).trim();
+    //     writeText(s);
+    //     textarea.setRangeText("", points[0], points[1]);
+    // }
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    if (textarea.value[start] === '\n' && start - 1 > 0) {
+        start--;
     }
+    if (textarea.value[end] === '\n' && end - 1 > 0) {
+        end--;
+    }
+    while (start - 1 > -1 && textarea.value[start - 1] !== '\n') {
+        start--;
+    }
+    while (end + 1 < textarea.value.length && textarea.value[end + 1] !== ';') {
+        end++;
+    }
+    let s = textarea.value.substring(start, end).trim();
+    writeText(s);
+    textarea.setRangeText("", start,end);
 
 }
 function copyLine(textarea) {
-    if (textarea.value[textarea.selectionStart] === "<") {
+    /*if (textarea.value[textarea.selectionStart] === "<") {
         let start = textarea.selectionStart;
         let end = start;
         while (end < textarea.value.length && /[<a-z0-9A-Z]/.test(textarea.value[end])) {
@@ -866,6 +883,23 @@ ${s.replace(/\b[a-zA-Z_]+[0-9]+\b/g, v => {
         selectionEnd++;
     }
     textarea.setRangeText(str, selectionEnd, selectionEnd);
+*/
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    if (textarea.value[start] === '\n' && start - 1 > 0) {
+        start--;
+    }
+    if (textarea.value[end] === '\n' && end - 1 > 0) {
+        end--;
+    }
+    while (start - 1 > -1 && textarea.value[start - 1] !== '\n') {
+        start--;
+    }
+    while (end + 1 < textarea.value.length && textarea.value[end + 1] !== ';') {
+        end++;
+    }
+    let s = textarea.value.substring(start, end).trim();
+    textarea.setRangeText(s, end, end);
 
 }
 async function loadTags() {
