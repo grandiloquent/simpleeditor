@@ -817,7 +817,7 @@ async function translate(textarea) {
         console.log(error);
     }
 }
-function deleteLine(textarea) {
+function deleteLine() {
     // if (textarea.value[textarea.selectionStart] === '{' || textarea.value[textarea.selectionStart - 1] === '{') {
     //     const points = getBlock(textarea);
     //     let s = textarea.value.substring(points[0], points[1]).trim();
