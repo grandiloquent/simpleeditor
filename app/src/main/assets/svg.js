@@ -20,7 +20,7 @@ async function initializeToolbars() {
         //     topIndexs = [15, 16, 18, 22, 20, 21, 2]
         // }
         if (document.title.endsWith(".glsl")) {
-            bottomIndexs = [1, 3, 24, 25, 28]
+            bottomIndexs = [1, 3, 36, 37, 24, 35, 25, 28]
         } else {
             bottomIndexs = [3, 28, 31, 33, 22, 35, 25, 34]
         }
@@ -161,6 +161,22 @@ const items = [
         }
     ],
 ];
+items.push([
+    37,
+    "close",
+    "删除",
+    () => {
+        deleteBlock(textarea);
+    }
+]);
+items.push([
+    36,
+    "edit_off",
+    "评注",
+    () => {
+        commentBlock();
+    }
+]);
 items.push([
     35,
     "search",

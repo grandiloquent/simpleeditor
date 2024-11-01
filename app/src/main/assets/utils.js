@@ -880,8 +880,8 @@ async function updateTags() {
             res = await fetch(`${baseUri}/svgtag`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    id:parseInt(id),
-                    names:[matches[0]]
+                    id: parseInt(id),
+                    names: [matches[0]]
                 })
             });
             if (res.status !== 200) {
@@ -1720,4 +1720,20 @@ function search() {
 
     textarea.selectionStart = index;
     textarea.selectionEnd = index + s.length;
+}
+function commentBlock() {
+    const points = findExtendPosition(textarea);
+    let string = textarea.value.substring(points[0], points[1]).trim();
+
+    string = string.split('\n').map(x => {
+        let line = x.trim();
+        if (!line) return x;
+        if (line.startsWith('// ')) {
+            return line.substring(3);
+        } else {
+            return "// " + line;
+        }
+    }).join('\n');
+
+    textarea.setRangeText(string, points[0], points[1]);
 }
