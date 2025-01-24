@@ -23,7 +23,16 @@
 
 <body>
     <div class="wrapper" style="padding: 49px 0 49px 0;">
-        <textarea id="textarea" style="font-size: 16px">#define MAX_STEPS 200
+        <textarea id="textarea" style="font-size: 16px">vec4 Material(vec3 ro, vec3 rd, float d);
+            float sdSph(vec3 p, vec3 pos, vec3 squash, float r);
+            float sdGyroid(vec3 p, float scale, float thickness, float bias);
+            mat2 Rot(float a);
+            float smax(float a, float b, float k);
+            float smin(float a, float b, float k);
+            float sabs(float x, float k);
+            float Hash21(vec2 p);
+            vec2 Hash22(vec2 p);
+            #define MAX_STEPS 200
             #define MAX_DIST 60.
             #define SURF_DIST .01
             #define CAM_MOVE 2.
@@ -33,21 +42,6 @@
             #define MAT_BODY 3.
             #define MAT_EYE 4.
             // From Dave Hoskins
-            vec2 Hash22(vec2 p) {
-                vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
-                p3 += dot(p3, p3.yzx + 33.33);
-                return fract((p3.xx + p3.yz) * p3.zy);
-            }
-            float Hash21(vec2 p) {
-                p = fract(p * vec2(123.1031, 324.1030));
-                p += dot(p, p + 33.33);
-                return fract(p.x * p.y);
-            }
-            float sabs(float x, float k) {
-                float a = (.5 / k) * x * x + k * .5;
-                float b = abs(x);
-                return b < k ? a : b;
-            }
             vec2 RaySphere(vec3 ro, vec3 rd, vec4 s) {
                 float t = dot(s.xyz - ro, rd);
                 vec3 p = ro + rd * t;
@@ -59,26 +53,6 @@
                     o.y = t + x;
                 }
                 return o;
-            }
-            // From IQ
-            float smin(float a, float b, float k) {
-                float h = clamp(0.5 + 0.5 * (b - a) / k, 0., 1.);
-                return mix(b, a, h) - k * h * (1.0 - h);
-            }
-            float smax(float a, float b, float k) { return smin(a, b, -k); }
-            mat2 Rot(float a) {
-                float s = sin(a);
-                float c = cos(a);
-                return mat2(c, -s, s, c);
-            }
-            float sdGyroid(vec3 p, float scale, float thickness, float bias) {
-                p *= scale;
-                return abs(dot(sin(p), cos(p.zxy)) + bias) / scale - thickness;
-            }
-            float sdSph(vec3 p, vec3 pos, vec3 squash, float r) {
-                squash = 1. / squash;
-                p = (p - pos) * squash;
-                return (length(p) - r) / max(squash.x, max(squash.y, squash.z));
             }
             vec4 Scales(vec2 uv, float overlap, float skew, float point, float blur) {
                 vec2 gv = fract(uv * 5.) - .5;
@@ -261,6 +235,74 @@
                      d = normalize(i);
                 return d;
             }
+            vec3 Render(vec2 uv, vec2 m, float t) {
+                vec3 ro = vec3(0, 0, -3) * (8. + sin(t * .2) * 2. * CAM_MOVE);
+                ro.yz *= Rot(-m.y * 3.14 + sin(t * .3) * CAM_MOVE * .2);
+                ro.xz *= Rot(-m.x * 6.2831 * 2. + sin(t * .1) * CAM_MOVE);
+                vec3 rd = GetRayDir(uv, ro, vec3(0, 0, sin(t * .11)), 6.);
+                float d = RayMarch(ro, rd);
+                vec3 col = vec3(0);
+                vec2 env = RaySphere(ro, rd, vec4(0, 0, 0, 20));
+                if (d < MAX_DIST) {
+                    vec4 snake = Material(ro, rd, d);
+                    snake.rgb *= S(60., 10., d);
+                    col = mix(col, snake.rgb, snake.a);
+                } else {
+                    // col = (rd.y * .5 + .5) * vec3(.4, 1., .2);
+                    col = (rd.y * .5 + .5) * vec3(0.3, 0.3, 0.0);
+                    col *= texture(iChannel0, rd).rgb;
+                    col *= 1. - S(.8, 1., rd.z);
+                    // if (env.y > 0.)  // vines behind
+                    // col *= S(0., 1.1, sdGyroid(ro + env.y * rd, .4, .1, .0)) * .5 + .5;
+                }
+                // if (env.x > 0.)  // vines in front
+                // col *= S(0., .25, sdGyroid(ro + env.x * rd, .25, .1, .0));
+                return col;
+            }
+            void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+                vec2 uv = (fragCoord - .5 * iResolution.xy) / iResolution.y;
+                vec2 m = (iMouse.xy - .5 * iResolution.xy) / iResolution.xy;
+                if (m.x < -.49 && m.y < -.49) m *= 0.;
+                vec3 col = Render(uv, m, iTime);
+                col *= 1.5;                    // exposure adjustment
+                col = pow(col, vec3(.4545));   // gamma correction
+                col *= 1. - dot(uv, uv) * .3;  // vignette
+                fragColor = vec4(col, 1.0);
+            }
+            vec2 Hash22(vec2 p) {
+                vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
+                p3 += dot(p3, p3.yzx + 33.33);
+                return fract((p3.xx + p3.yz) * p3.zy);
+            }
+            float Hash21(vec2 p) {
+                p = fract(p * vec2(123.1031, 324.1030));
+                p += dot(p, p + 33.33);
+                return fract(p.x * p.y);
+            }
+            float sabs(float x, float k) {
+                float a = (.5 / k) * x * x + k * .5;
+                float b = abs(x);
+                return b < k ? a : b;
+            }
+            float smin(float a, float b, float k) {
+                float h = clamp(0.5 + 0.5 * (b - a) / k, 0., 1.);
+                return mix(b, a, h) - k * h * (1.0 - h);
+            }
+            float smax(float a, float b, float k) { return smin(a, b, -k); }
+            mat2 Rot(float a) {
+                float s = sin(a);
+                float c = cos(a);
+                return mat2(c, -s, s, c);
+            }
+            float sdGyroid(vec3 p, float scale, float thickness, float bias) {
+                p *= scale;
+                return abs(dot(sin(p), cos(p.zxy)) + bias) / scale - thickness;
+            }
+            float sdSph(vec3 p, vec3 pos, vec3 squash, float r) {
+                squash = 1. / squash;
+                p = (p - pos) * squash;
+                return (length(p) - r) / max(squash.x, max(squash.y, squash.z));
+            }
             vec4 Material(vec3 ro, vec3 rd, float d) {
                 vec3 p = ro + rd * d;
                 vec4 n = GetNormalAndCurvature(p, mix(.01, .03, S(8., 20., d)));
@@ -283,16 +325,21 @@
                     p1 = mix(p1, p2, S(.45, .5, fract(t)));
                     mat.yz += p1 * vec2(.01, .03) * 1.;
                     float a = atan(mat.y, mat.z);
-                    float d = abs(mat.z) + mat.y * mat.y;
-                    col *= vec3(1, 1, .1);
-                    col += S(.1, .0, length(mat.yz * vec2(1, 2)) - .1) * .1;
-                    float z = S(.7, 1., rd.z * rd.z) * .05;
-                    col *= S(.02 - z, .03 + z, d);
-                    vec3 gp = vec3(a, mat.yz) * 20.;
-                    float gyroid = (abs(dot(sin(gp), cos(gp.zxy))));
-                    col *= 1. + gyroid * .1;
-                    col += r * r * r * .3;
-                    col += pow(spe, 6.);
+            
+            
+             col *= vec3(1, .1, .1);
+             col += S(.1, .0, length(mat.yz * vec2(2, 2)) - .12) * .1;
+             float z = S(.7, 1., rd.z * rd.z) * .05;
+            // col *= S(.02 - z, .03 + z, d);
+              float d = abs(mat.z*mat.z) + mat.y * mat.y;       
+            col *= S(.02 - z, .03 + z, d*4.);        
+            vec3 gp = vec3(a, mat.yz) * 20.;
+             float gyroid = (abs(dot(sin(gp), cos(gp.zxy))));
+             col *= 1. + gyroid * .1;
+            col += r * r * r * .3;
+             col += pow(spe, 6.);
+            
+            
                 } else if (mat.x == MAT_BODY) {
                     float x = mat.y;
                     float y = mat.z;
@@ -301,10 +348,10 @@
                     float t = iTime * .3;
                     float neckFade = S(3., 10., p.z);
                     p.y += sin(p.z * .1 - t) * neckFade;
-                    // vec3 baseCol =
-                        mix(vec3(1., 1., .2), vec3(.3, .8, .1), S(-.55, -.1, p.y));
-            vec3 baseCol =
-                        mix(vec3(1., 1., .0), vec3(.6, .8, .0), S(-.55, -.1, p.y));
+                    // vec3 baseCol = mix(vec3(1., 1., .2), vec3(.3, .8, .1), S(-.55, -.1,
+                    // p.y));
+                    vec3 baseCol =
+                        mix(vec3(.8, .8, .8), vec3(1., 1., 1.0), S(-.55, -.1, p.y));
                     col *= mix(baseCol, vec3(.2, .4, .2) * .5, wave);
                     col += spe * pow(1. - abs(n.w), 5.) * .3;
                     r = texture(iChannel1, ref).rgb;
@@ -315,40 +362,6 @@
                     col += pow(min(1., spe * 5.), 5.);
                 }
                 return vec4(col, 1);
-            }
-            vec3 Render(vec2 uv, vec2 m, float t) {
-                vec3 ro = vec3(0, 0, -3) * (8. + sin(t * .2) * 2. * CAM_MOVE);
-                ro.yz *= Rot(-m.y * 3.14 + sin(t * .03) * CAM_MOVE * .2);
-                ro.xz *= Rot(-m.x * 6.2831 * 2. + sin(t * .05) * CAM_MOVE);
-                vec3 rd = GetRayDir(uv, ro, vec3(0, 0, sin(t * .11)), 6.);
-                float d = RayMarch(ro, rd);
-                vec3 col = vec3(0);
-                vec2 env = RaySphere(ro, rd, vec4(0, 0, 0, 20));
-                if (d < MAX_DIST) {
-                    vec4 snake = Material(ro, rd, d);
-                    snake.rgb *= S(60., 10., d);
-                    col = mix(col, snake.rgb, snake.a);
-                } else {
-                    // col = (rd.y * .5 + .5) * vec3(.4, 1., .2);
-                    col = (rd.y * .5 + .5) * vec3(1., 0., 0.);
-                    col *= texture(iChannel0, rd).rgb;
-                    col *= 1. - S(.8, 1., rd.z);
-                    // if (env.y > 0.)  // vines behind
-                    // col *= S(0., 1.1, sdGyroid(ro + env.y * rd, .4, .1, .0)) * .5 + .5;
-                }
-                // if (env.x > 0.)  // vines in front
-                // col *= S(0., .25, sdGyroid(ro + env.x * rd, .25, .1, .0));
-                return col;
-            }
-            void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-                vec2 uv = (fragCoord - .5 * iResolution.xy) / iResolution.y;
-                vec2 m = (iMouse.xy - .5 * iResolution.xy) / iResolution.xy;
-                if (m.x < -.49 && m.y < -.49) m *= 0.;
-                vec3 col = Render(uv, m, iTime);
-                col *= 1.5;                    // exposure adjustment
-                col = pow(col, vec3(.4545));   // gamma correction
-                col *= 1. - dot(uv, uv) * .3;  // vignette
-                fragColor = vec4(col, 1.0);
             }</textarea>
     </div>
     <div class="bar-renderer top" style="top: 0;">

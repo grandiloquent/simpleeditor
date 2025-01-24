@@ -148,6 +148,32 @@ async function saveData() {
         toast.setAttribute('message', '错误');
     }
 }
+async function insertData() {
+    let s = await readText();
+    let body = {
+        id: 0,
+        title: substringBefore(s, "\n").trim(),
+        content: substringAfter(s, "\n").trim()
+    };
+
+    let res;
+    try {
+        res = await fetch(`${baseUri}/svg`, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+        if (res.status !== 200) {
+            throw new Error();
+        }
+        let sid = await res.text();
+        return parseInt(sid);
+
+
+    } catch (error) {
+        return 0;
+    }
+}
+
 
 async function loadData() {
     if (!id) return;
@@ -1342,25 +1368,33 @@ function replaceString() {
 }
 let mG;
 async function newFile() {
+
+
+
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
     let contents = ".glsl";
-    if (textarea.value[start - 1] === '"') {
-        while (end < textarea.value.length) {
-            if (textarea.value[end] === '"' && textarea.value[end - 1] !== '\\') {
-                break;
-            } else
-                end++;
-        }
-        contents = JSON.parse("{\"value\":\"" + textarea.value.substring(start, end) + "\"}").value;
+    //if (textarea.value[start - 1] === '"') {
+    while (start - 1 > 0) {
+        if (textarea.value[start] === '"' && textarea.value[start - 1] !== '\\') {
+            start++;
+            break;
+        } else
+            start--;
     }
+    while (end < textarea.value.length) {
+        if (textarea.value[end] === '"' && textarea.value[end - 1] !== '\\') {
+            break;
+        } else
+            end++;
+    }
+    contents = JSON.parse("{\"value\":\"" + textarea.value.substring(start, end) + "\"}").value;
+
     let body = {
         id: 0,
         title: `.glsl`,
         content: contents
     };
-    // await submitNote(getBaseUri(), JSON.stringify(body));
-    // document.getElementById('toast').setAttribute('message', '成功');
     let res;
     try {
         res = await fetch(`${baseUri}/svg`, {
@@ -1822,7 +1856,7 @@ function commentBlock() {
                 value = "vec4(0.0,0.0,0.0,0.0)";
 
             textarea.setRangeText(`${str}
-            ${name} = ${value};`, start, end);
+           ${t} ${name} = ${value};`, start, end);
         } else {
             textarea.setRangeText(str, start, end);
         }
@@ -1833,21 +1867,24 @@ function commentLines() {
     let start = points[0];
     let end = points[1];
     let string = textarea.value.substring(start, end).trim();
-    let lines=string.split('\n');
-    let name="";
-    let str = lines.map((x,k) => {
+    let lines = string.split('\n');
+    let name = "";
+    let str = lines.map((x, k) => {
         let line = x.trim();
         if (!line) return x;
-        if (line.startsWith('//')) {
-            return line.substring(2);
-        } else {
-            if(k+1===lines.length)
-                 name=`${/[a-zA-Z_0-9]+/.exec(line)[0]} = 1.;`
+        // if (line.startsWith('//')) {
+        //     return line.substring(2);
+        // } else {
+            if (k + 1 === lines.length)
+                name = `${/[a-zA-Z_0-9]+/.exec(line)[0]} = 1.;`
             return "// " + line;
-        }
+        // }
     }).join('\n');
 
-    textarea.setRangeText(`${str}
+    textarea.setRangeText(`/*
+        ${str}
+*/
+
 ${name}      
 `, start, end);
 

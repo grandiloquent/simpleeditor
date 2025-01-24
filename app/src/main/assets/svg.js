@@ -20,7 +20,7 @@ async function initializeToolbars() {
     //     topIndexs = [15, 16, 18, 22, 20, 21, 2]
     // }
     if (document.title.endsWith(".glsl")) {
-        bottomIndexs = [3, 29,101, 102, 37, 24, 35, 25, 28]
+        bottomIndexs = [3, 29, 101, 102, 37, 24, 35, 25, 28]
     } else if (document.title.startsWith("ShaderToy")) {
         bottomIndexs = [3, 28, 31, 33, 22, 35, 24, 34]
     } else {
@@ -399,9 +399,10 @@ document.addEventListener('keydown', async evt => {
         if (evt.key === 'F1') {
             evt.preventDefault();
             formatCode()
+
         } else if (evt.key === 'F2') {
             evt.preventDefault();
-            formatBold(textarea)
+
         } else if (evt.key === 'F3') {
             evt.preventDefault();
             deleteBlock()
@@ -418,7 +419,7 @@ document.addEventListener('keydown', async evt => {
 
         } else if (evt.key === 'F5') {
             evt.preventDefault();
-            formatCode()
+            window.open(`${baseUri}/viewer?id=${(await insertData())}`,'_blank')
         } else if (evt.key === 'F6') {
             evt.preventDefault();
             insertSnippets()
