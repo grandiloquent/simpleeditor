@@ -1761,9 +1761,9 @@ EffectPass.prototype.NewTexture = function( wa, slot, url, buffers, cubeBuffers,
 
         if( this.mForceMuted===false )
         {
-            if(url.mType==="musicstream" && SC === null)
+            if(url.mType==="musicstream" ) // && SC === null
             {
-                alert( "Shadertoy: Soundcloud could not be reached" );
+                //alert( "Shadertoy: Soundcloud could not be reached" );
                 texture.audio.mForceMuted = true;
             }
             }

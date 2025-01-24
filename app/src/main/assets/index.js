@@ -1,4 +1,4 @@
-let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.55:8090" : "";
+let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.35.56:8100" : "";
 const searchParams = new URL(window.location).searchParams;
 async function load() {
     // const path = searchParams.get("path");

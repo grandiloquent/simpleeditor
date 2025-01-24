@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -31,17 +32,7 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.pdmodel.PDPage;
-import com.tom_roush.pdfbox.pdmodel.PDResources;
-import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,27 +90,6 @@ public class MainActivity extends Activity {
         return String.format("http://%s:%d", host, DEFAULT_PORT);
     }
 
-    public void getAllImageFromFile(String pathToFile, int start, int end, String dir) {
-        try (PDDocument document = PDDocument.load(new File(pathToFile))) {
-            int j = 1;
-            for (int i = start; i < Math.min(document.getNumberOfPages(), end); i++) {
-                PDPage page = document.getPage(i);
-                List<PDImageXObject> pageImages = getImagesFromResources(page.getResources());
-                for (PDImageXObject pageImage : pageImages) {
-                    try (FileOutputStream outputStream = new FileOutputStream(dir + "/" + (j++) + ".png")) {
-                        //Bitmap bitmap =
-                        //Bitmap bmp = new JP2Decoder(jp2data).decode();
-                        //b.compress(CompressFormat.PNG, 100, outputStream);
-                        //b.recycle();
-                        Shared.copyStreams(pageImage.createInputStream(), outputStream);
-                    }
-                }
-                //images.put(i, pageImages.isEmpty() ? new ArrayList<>() : pageImages);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Can't get images from file: " + e.toString());
-        }
-    }
 
     public static WebView initializeWebView(MainActivity context) {
         WebView webView = new WebView(context);
@@ -220,19 +190,6 @@ public class MainActivity extends Activity {
 
     public static native String startServer(Context context, AssetManager assetManager, String host, int port);
 
-    private List<PDImageXObject> getImagesFromResources(PDResources resources) throws IOException {
-        List<PDImageXObject> images = new ArrayList<>();
-        for (COSName xObjectName : resources.getXObjectNames()) {
-            PDXObject xObject = resources.getXObject(xObjectName);
-            if (xObject instanceof PDFormXObject) {
-                images.addAll(getImagesFromResources(((PDFormXObject) xObject).getResources()));
-            } else if (xObject instanceof PDImageXObject) {
-                PDImageXObject image = ((PDImageXObject) xObject);
-                images.add(image);
-            }
-        }
-        return images;
-    }
 
     private void initialize() {
         requestNotificationPermission(this);
@@ -303,6 +260,27 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initialize();
+        new Thread(() -> {
+            File[] files = new File(Environment.getExternalStorageDirectory(), "Books").listFiles();
+            List<String> paths = new ArrayList<>();
+            for (File f : files) {
+                if (f.getName().endsWith(".jpg")
+                        || f.getName().endsWith(".jpeg")
+                        || f.getName().endsWith(".png")
+                        || f.getName().endsWith(".gif")
+                        || f.getName().endsWith(".mp4")
+                        || f.getName().endsWith(".webp"))
+                    paths.add(f.getAbsolutePath());
+            }
+            if (paths.size() > 0)
+                MediaScannerConnection.scanFile(
+                        this, paths.toArray(new String[0]), new String[]{
+                                "image/*",
+                                "video/*"
+                        }, null
+                );
+
+        }).start();
     }
 
     @Override
@@ -351,7 +329,6 @@ public class MainActivity extends Activity {
         menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         MenuItem menuItem1 = menu.add(0, 8, 0, "搜索");
         menuItem1.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
         menu.add(0, 5, 0, "打开");
         menu.add(0, 10, 0, "人工智能");
         menu.add(0, 6, 0, "收藏");

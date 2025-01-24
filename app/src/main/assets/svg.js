@@ -2,30 +2,33 @@ async function initializeToolbars() {
     let topIndexs;
     let bottomIndexs;
 
-    try {
-        const response = await fetch(`${baseUri}/ts`);
-        if (response.status > 399 || response.status < 200) {
-            throw new Error(`${response.status}: ${response.statusText}`)
-        }
-        const results = JSON.parse(await response.text());
-        if (results) {
-            topIndexs = results[0];
-            bottomIndexs = results[1];
-        }
-    } catch (error) {
-        topIndexs = [1, 29, 14, 30, 20, 32, 16, 2]
-        // if (document.title.endsWith(".glsl")) {
-        //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
-        // } else {
-        //     topIndexs = [15, 16, 18, 22, 20, 21, 2]
-        // }
-        if (document.title.endsWith(".glsl")) {
-            bottomIndexs = [1, 3, 36, 37, 24, 35, 25, 28]
-        } else {
-            bottomIndexs = [3, 28, 31, 33, 22, 35, 25, 34]
-        }
+    // try {
+    //     const response = await fetch(`${baseUri}/ts`);
+    //     if (response.status > 399 || response.status < 200) {
+    //         throw new Error(`${response.status}: ${response.statusText}`)
+    //     }
+    //     const results = JSON.parse(await response.text());
+    //     if (results) {
+    //         topIndexs = results[0];
+    //         bottomIndexs = results[1];
+    //     }
+    // } catch (error) {
+    topIndexs = [1, 36, 14, 30, 20, 32, 16, 2]
+    // if (document.title.endsWith(".glsl")) {
+    //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
+    // } else {
+    //     topIndexs = [15, 16, 18, 22, 20, 21, 2]
+    // }
+    if (document.title.endsWith(".glsl")) {
+        bottomIndexs = [3, 29,101, 102, 37, 24, 35, 25, 28]
+    } else if (document.title.startsWith("ShaderToy")) {
+        bottomIndexs = [3, 28, 31, 33, 22, 35, 24, 34]
+    } else {
+        bottomIndexs = [3, 28, 31, 33, 22, 35, 25, 34]
 
     }
+
+    //}
     insertItem(topIndexs, '.bar-renderer.top', 'bar-item-tab');
     insertItem(bottomIndexs, '.bar-renderer.bottom', 'bar-item-tab');
 }
@@ -329,7 +332,62 @@ items.push([
         deleteLine();
     }
 ]);
+items.push([
+    102,
+    "edit_off",
+    "注释",
+    () => {
+        commentLines();
+    }
+]);
+items.push([
+    101,
+    "code",
+    "定义",
+    () => {
+        defineFunction();
+    }
+]);
 
+function defineFunction() {
+    let i = textarea.selectionStart;
+    let j = textarea.selectionEnd;
+    const s = textarea.value;
+    while (i > 0 && s[i - 1] != '\n') {
+        i--;
+    }
+    let c = 0;
+    while (j < s.length) {
+        if (s[j] === '{') {
+            c++;
+        } else if (s[j] === '}') {
+            c--;
+            if (c === 0) {
+                j++;
+                break;
+            }
+        }
+        j++;
+    }
+
+    let ss = textarea.value.substring(0, i).trim();
+    const s1 = substringBefore(ss, "\n")
+    const s2 = substringAfter(ss, "\n");
+
+    const s3 = textarea.value.substring(j);
+
+    let strings = textarea.value.substring(
+        i,
+        j
+    );
+    textarea.value = `
+${s1}
+${substringBefore(strings, "{")};    
+${s2}
+${s3}
+${strings}`
+    // textarea.setRangeText("", points[1], points[1]);
+}
 
 document.addEventListener('keydown', async evt => {
     if (evt.ctrlKey) {

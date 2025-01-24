@@ -47,7 +47,7 @@ android {
     }
 }
 dependencies { // All the libraries you want to use. See 3️⃣
-    implementation(libs.pdfbox.android)
+    //implementation(libs.pdfbox.android)
     // https://mvnrepository.com/artifact/com.gemalto.jp2/jp2-android
     //implementation(libs.jp2.android)
 

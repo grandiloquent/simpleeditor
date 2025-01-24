@@ -15,7 +15,7 @@ if (!String.prototype.replaceAll) {
     };
 }
 
-let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.161:8100" : "..";
+let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.35.56:8100" : "..";
 const searchParams = new URL(window.location).searchParams;
 let id = searchParams.get('id');
 const path = searchParams.get('path');
@@ -150,6 +150,7 @@ async function saveData() {
 }
 
 async function loadData() {
+    if (!id) return;
     const res = await fetch(`${baseUri}/svg?id=${id}`, { cache: "no-store" });
     const body = await res.json();;
     document.title = body["title"];
@@ -886,22 +887,33 @@ ${s.replace(/\b[a-zA-Z_]+[0-9]+\b/g, v => {
     }
     textarea.setRangeText(str, selectionEnd, selectionEnd);
 */
-    let start = textarea.selectionStart;
-    let end = textarea.selectionEnd;
-    if (textarea.value[start] === '\n' && start - 1 > 0) {
-        start--;
+    const points = getLine(textarea);
+    let start = points[0];
+    let end = start;
+    console.log(start, end, textarea.value[end])
+    while (end < textarea.value.length) {
+        if (textarea.value[end] === ';') {
+            end++;
+            break;
+        } else
+            end++;
     }
-    if (textarea.value[end] === '\n' && end - 1 > 0) {
-        end--;
-    }
-    while (start - 1 > -1 && textarea.value[start - 1] !== '\n') {
-        start--;
-    }
-    while (end + 1 < textarea.value.length && textarea.value[end] !== ';') {
-        end++;
-    }
-    let s = textarea.value.substring(start, end + 1).trim();
-    textarea.setRangeText("\n" + s, end + 1, end + 1);
+    let string = textarea.value.substring(start, end).trim();
+
+    let str = string.split('\n').map(x => {
+        let line = x.trim();
+        if (!line) return x;
+        if (line.startsWith('// ')) {
+            return line.substring(3);
+        } else {
+            return "// " + line;
+        }
+    }).join('\n');
+
+
+    textarea.setRangeText(`${str}
+        
+${string}        `, start, end);
 
 }
 async function loadTags() {
@@ -1758,18 +1770,85 @@ function search() {
     textarea.selectionEnd = index + s.length;
 }
 function commentBlock() {
-    const points = findExtendPosition(textarea);
-    let string = textarea.value.substring(points[0], points[1]).trim();
+    const points = getLine(textarea);
+    let start = points[0];
+    let end = start;
+    while (end < textarea.value.length) {
+        if (textarea.value[end] === ';') {
+            end++;
+            break;
+        } else
+            end++;
+    }
+    let string = textarea.value.substring(start, end).trim();
+    if (string.trim().startsWith("//")) {
+        let str = string.split('\n').map(x => {
+            let line = x.trim();
+            if (!line) return x;
+            if (line.startsWith('// ')) {
+                return line.substring(3);
+            } else {
+                return "// " + line;
+            }
+        }).join('\n');
 
-    string = string.split('\n').map(x => {
+
+        textarea.setRangeText(str, start, end);
+
+    } else {
+        let str = string.split('\n').map(x => {
+            let line = x.trim();
+            if (!line) return x;
+            if (line.startsWith('// ')) {
+                return line.substring(3);
+            } else {
+                return "// " + line;
+            }
+        }).join('\n');
+
+        if (/\s?(float|vec2|vec3|vec4) +[a-zA-Z0-9_]+/.test(string)) {
+            const match = /\s?(float|vec2|vec3|vec4) +([a-zA-Z0-9_]+)/.exec(string);
+
+            const name = match[2];
+            const t = match[1];
+            let value;
+            if (t === "float")
+                value = "0.0";
+            if (t === "vec2")
+                value = "vec2(0.0,0.0)";
+            if (t === "vec3")
+                value = "vec3(0.0,0.0,0.0)";
+            if (t === "vec4")
+                value = "vec4(0.0,0.0,0.0,0.0)";
+
+            textarea.setRangeText(`${str}
+            ${name} = ${value};`, start, end);
+        } else {
+            textarea.setRangeText(str, start, end);
+        }
+    }
+}
+function commentLines() {
+    const points = findExtendPosition(textarea);
+    let start = points[0];
+    let end = points[1];
+    let string = textarea.value.substring(start, end).trim();
+    let lines=string.split('\n');
+    let name="";
+    let str = lines.map((x,k) => {
         let line = x.trim();
         if (!line) return x;
-        if (line.startsWith('// ')) {
-            return line.substring(3);
+        if (line.startsWith('//')) {
+            return line.substring(2);
         } else {
+            if(k+1===lines.length)
+                 name=`${/[a-zA-Z_0-9]+/.exec(line)[0]} = 1.;`
             return "// " + line;
         }
     }).join('\n');
 
-    textarea.setRangeText(string, points[0], points[1]);
+    textarea.setRangeText(`${str}
+${name}      
+`, start, end);
+
 }
