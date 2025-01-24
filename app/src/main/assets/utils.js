@@ -1875,9 +1875,9 @@ function commentLines() {
         // if (line.startsWith('//')) {
         //     return line.substring(2);
         // } else {
-            if (k + 1 === lines.length)
-                name = `${/[a-zA-Z_0-9]+/.exec(line)[0]} = 1.;`
-            return "// " + line;
+        if (k + 1 === lines.length)
+            name = `${/[a-zA-Z_0-9]+/.exec(line)[0]} = 1.;`
+        return "// " + line;
         // }
     }).join('\n');
 
@@ -1888,4 +1888,71 @@ function commentLines() {
 ${name}      
 `, start, end);
 
+}
+function defineFunction() {
+    let i = textarea.selectionStart;
+    let j = textarea.selectionEnd;
+    const s = textarea.value;
+    while (i > 0 && s[i - 1] != '\n') {
+        i--;
+    }
+    let c = 0;
+    while (j < s.length) {
+        if (s[j] === '{') {
+            c++;
+        } else if (s[j] === '}') {
+            c--;
+            if (c === 0) {
+                j++;
+                break;
+            }
+        }
+        j++;
+    }
+
+    let ss = textarea.value.substring(0, i).trim();
+    const s1 = substringBefore(ss, "\n")
+    const s2 = substringAfter(ss, "\n");
+
+    const s3 = textarea.value.substring(j);
+
+    let strings = textarea.value.substring(
+        i,
+        j
+    );
+    textarea.value = `
+${s1}
+${substringBefore(strings, "{")};    
+${s2}
+${s3}
+${strings}`
+    // textarea.setRangeText("", points[1], points[1]);
+}
+
+function refactorFunction() {
+    const points = findExtendPosition(textarea);
+    let i = points[0];
+    let j = points[1];
+    const s = textarea.value.substring(i, j).trim();
+
+    let ss = textarea.value.substring(0, i).trim();
+    const s1 = substringBefore(ss, "\n")
+    const s2 = substringAfter(ss, "\n");
+
+    const s3 = textarea.value.substring(j);
+
+
+    const s4 = substringBefore(s, "\n")
+    const s5 = substringAfter(s, "\n");
+
+    let strings = `void ${s4}(){
+${s5}    
+}`
+    textarea.value = `
+${s1}
+void ${s4}();    
+${s2}
+${s3}
+${strings}`
+    // textarea.setRangeText("", points[1], points[1]);
 }

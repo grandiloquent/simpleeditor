@@ -13,7 +13,7 @@ async function initializeToolbars() {
     //         bottomIndexs = results[1];
     //     }
     // } catch (error) {
-    topIndexs = [1, 36, 14, 30, 20, 32, 16, 2]
+    topIndexs = [1, 36, 14, 30, 103, 20, 32, 16, 2]
     // if (document.title.endsWith(".glsl")) {
     //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
     // } else {
@@ -348,47 +348,14 @@ items.push([
         defineFunction();
     }
 ]);
-
-function defineFunction() {
-    let i = textarea.selectionStart;
-    let j = textarea.selectionEnd;
-    const s = textarea.value;
-    while (i > 0 && s[i - 1] != '\n') {
-        i--;
+items.push([
+    103,
+    "code",
+    "重构",
+    () => {
+        refactorFunction();
     }
-    let c = 0;
-    while (j < s.length) {
-        if (s[j] === '{') {
-            c++;
-        } else if (s[j] === '}') {
-            c--;
-            if (c === 0) {
-                j++;
-                break;
-            }
-        }
-        j++;
-    }
-
-    let ss = textarea.value.substring(0, i).trim();
-    const s1 = substringBefore(ss, "\n")
-    const s2 = substringAfter(ss, "\n");
-
-    const s3 = textarea.value.substring(j);
-
-    let strings = textarea.value.substring(
-        i,
-        j
-    );
-    textarea.value = `
-${s1}
-${substringBefore(strings, "{")};    
-${s2}
-${s3}
-${strings}`
-    // textarea.setRangeText("", points[1], points[1]);
-}
-
+]);
 document.addEventListener('keydown', async evt => {
     if (evt.ctrlKey) {
         if (evt.key === 's') {
@@ -419,7 +386,7 @@ document.addEventListener('keydown', async evt => {
 
         } else if (evt.key === 'F5') {
             evt.preventDefault();
-            window.open(`${baseUri}/viewer?id=${(await insertData())}`,'_blank')
+            window.open(`${baseUri}/viewer?id=${(await insertData())}`, '_blank')
         } else if (evt.key === 'F6') {
             evt.preventDefault();
             insertSnippets()
