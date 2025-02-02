@@ -119,11 +119,11 @@ async function newTemplate() {
 }
 document.getElementById('add').addEventListener('click', async evt => {
     //await newTemplate();
-    const s = await readText();
-    const id = /(?<=\/view\/)[a-zA-Z0-9]+/.exec(s)[0];
-    let res = await fetch(`${baseUri}/shadertoy?q=${id}`)
-    const obj = await res.json();
-    console.log(obj)
+    // const s = await readText();
+    // const id = /(?<=\/view\/)[a-zA-Z0-9]+/.exec(s)[0];
+    // let res = await fetch(`${baseUri}/shadertoy?q=${id}`)
+    // const obj = await res.json();
+    // console.log(obj)
     // res = await fetch(`${baseUri}/svg`, {
     //     method: 'POST',
     //     body: JSON.stringify({
