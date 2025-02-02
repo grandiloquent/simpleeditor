@@ -1938,7 +1938,7 @@ EffectPass.prototype.NewTexture = function( wa, slot, url, buffers, cubeBuffers,
     }
     else
     {
-        alert( "input type error" );
+        //alert( "input type error" );
         return { mFailed: true };
     }
 

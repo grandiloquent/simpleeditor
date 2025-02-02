@@ -31,8 +31,18 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -330,7 +340,7 @@ public class MainActivity extends Activity {
         MenuItem menuItem1 = menu.add(0, 8, 0, "搜索");
         menuItem1.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         menu.add(0, 5, 0, "打开");
-        menu.add(0, 10, 0, "人工智能");
+        menu.add(0, 10, 0, "ShaderToy");
         menu.add(0, 6, 0, "收藏");
         menu.add(0, 7, 0, "历史");
         return super.onCreateOptionsMenu(menu);
@@ -401,9 +411,67 @@ public class MainActivity extends Activity {
                     mWebView4.loadUrl("http://0.0.0.0:8100");
                 break;
             case 10:
-                webView.loadUrl("https://gemini.google.com/");
+                //webView.loadUrl("https://gemini.google.com/");
+                shaderToy(this,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",Shared.getText(this).toString());
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static void shaderToy(Context context, String userAgent, String uri) {
+        new Thread(() -> {
+            String res = copyShaderToy(context, uri, PreferenceManager.getDefaultSharedPreferences(context)
+                    .getString("shadertoy", null), userAgent);
+            Log.e("B5aOx2", String.format("shaderToy, %s", res));
+            try {
+                String u = String.format("http://%s:8100/svg", Shared.getDeviceIP(context));
+                HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
+                c.setRequestMethod("POST");
+                c.setRequestProperty("charset", "utf-8");
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("id",0);
+                jsonObject.put("title", "ShaderToy ");
+                jsonObject.put("content", res);
+                byte[] buffer = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+                c.getOutputStream().write(buffer, 0, buffer.length);
+                Shared.readString(c);
+            } catch (Exception ignored) {
+            }
+            Shared.postOnMainThread(() -> {
+                Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show();
+            });
+
+        }).start();
+    }
+
+    private static String copyShaderToy(Context context, String uri, String cookie, String userAgent) {
+        DataOutputStream dos = null;
+        String id = Shared.substringBefore(Shared.substringAfter(uri, "/view/"), "/");
+        String params = "s=%7B%20%22shaders%22%20%3A%20%5B%22" + id + "%22%5D%20%7D&nt=1&nl=1&np=1";
+        try {
+            HttpURLConnection c = (HttpURLConnection) new URL("https://www.shadertoy.com/shadertoy").openConnection();
+            c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            c.setRequestProperty("charset", "utf-8");
+            c.setRequestProperty("Content-Length", Integer.toString(params.getBytes().length));
+            c.setRequestProperty("Cookie", cookie);
+            c.setRequestProperty("Referer", uri);
+            c.setRequestProperty("User-Agent", userAgent);
+            c.setRequestMethod("POST");
+            dos = new DataOutputStream(c.getOutputStream());
+            dos.writeBytes(params);
+            dos.flush();
+            return Shared.readString(c);
+
+        } catch (Exception e) {
+            Log.e("B5aOx2", String.format("copyShaderToy, %s", e));
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return null;
     }
 }

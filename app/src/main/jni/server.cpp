@@ -854,9 +854,28 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
         auto q = req.get_param_value("q");
         httplib::SSLClient cli("www.shadertoy.com", 443);
         cli.enable_server_certificate_verification(false);
-        auto result = cli.Post("/shadertoy", {}, "s=%7B%20%22shaders%22%20%3A%20%5B%22" + q +
-                                                 "%22%5D%20%7D&nt=1&nl=1&np=1",
+        std::stringstream ss;
+        ss << "s=%7B%20%22shaders%22%20%3A%20%5B%22";
+        ss << q;
+        ss << "%22%5D%20%7D&nt=1&nl=1&np=1";
+        httplib::Headers headers = {
+                {"user-agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"},
+
+                        };
+        auto result = cli.Post("/shadertoy", headers,
+                               ss.str(),
                                "application/x-www-form-urlencoded");
+
+
+//        auto result = cli.Get("/api/v1/shaders/" + q + "?key=Bt8jhH", {{"User-Agent",
+//                                                                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"}}
+//        );
+        LOGE("%s %d", ss.str().c_str(), result->status);
+        for (const auto &item: result->headers) {
+            LOGE("%s:%s", item.first.c_str(), item.second.c_str());
+        }
+
         if (result) {
             res.set_content(result->body, "text/plain");
             return;

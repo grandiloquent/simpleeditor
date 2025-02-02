@@ -118,6 +118,19 @@ async function newTemplate() {
     }
 }
 document.getElementById('add').addEventListener('click', async evt => {
-    await newTemplate();
+    //await newTemplate();
+    const s = await readText();
+    const id = /(?<=\/view\/)[a-zA-Z0-9]+/.exec(s)[0];
+    let res = await fetch(`${baseUri}/shadertoy?q=${id}`)
+    const obj = await res.json();
+    console.log(obj)
+    // res = await fetch(`${baseUri}/svg`, {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //         id: 0,
+    //         title: `ShaderToy`,
+    //         content: `[${JSON.stringify(obj.Shader)}]`
+    //     })
+    // });
 });
 renderTags();
