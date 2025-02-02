@@ -23,7 +23,137 @@
 
 <body>
     <div class="wrapper" style="padding: 49px 0 49px 0;">
-        <textarea id="textarea" style="font-size: 16px"></textarea>
+        <textarea id="textarea" style="font-size: 16px">.glsl
+    
+            // Created by David Gallardo - xjorma/2020
+            // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0
+            #if HW_PERFORMANCE == 0
+            #else
+            #define AA
+            #endif
+            #define NO_UNROLL_ZERO min(0, iFrame)
+            const float period = 10.;
+            const float scale = 5.;
+            float alt(vec3 p) { return (sin(p.x / period) + sin(p.z / period)) * scale; }
+            float sdSphere(vec3 p, float s) { return length(p) - s; }
+            float map(vec3 p) {
+                vec3 v = vec3(3, 22, 3);
+                vec3 i = floor((p + v / 2.) / v);
+                vec3 o = vec3(0, alt(i), 0);
+                vec3 q = mod(p + o + v / 2., v) - v / 2.0;
+                float r = step(abs(i.y), 1.5);
+                return sdSphere(q, r * 1.1);
+            }
+            #define EPS 0.001
+            vec3 calcNormal(vec3 pos) {
+                vec3 col;
+                vec2 eps = vec2(EPS, 0);
+                float d = map(pos);
+                return normalize(vec3(map(pos + eps.xyy) - d, map(pos + eps.yxy) - d,
+                                      map(pos + eps.yyx) - d));
+            }
+            void rayMarch(vec3 ro, vec3 rd, out float t, out float d, in float maxd) {
+                t = 0.;
+                d = 0.;
+                vec3 cp = ro;
+                for (int i = 0; i < 200; ++i) {
+                    d = map(cp);
+                    t += d;
+                    cp = ro + rd * t;
+                    if (d < .001 || d > maxd || abs(cp.y) > 35.) break;
+                }
+            }
+            vec3 applyFog(vec3 rgb, float distance, vec3 fogColor) {
+                float fogAmount = 1.0 - exp(-distance * 0.3);
+                return mix(rgb, fogColor, fogAmount);
+            }
+            vec3 getSkyColor(vec3 rd) {
+                vec3 c1 = mix(vec3(0.), vec3(0, 0, 1), (sign(rd.y) + 1.) / 2.);
+                vec3 c2 = mix(vec3(1), c1, abs(rd.y));
+                return c2;
+            }
+            vec3 lastRecur(vec3 ro, vec3 rd) { return getSkyColor(rd); }
+            #define GEN_RENDER(NAME, DIST, RECUR)                               \
+                vec3 NAME(vec3 ro, vec3 rd) {                                   \
+                    float t, d;                                                 \
+                    rayMarch(ro, rd, t, d, DIST);                               \
+                    vec3 p = ro + rd * t;                                       \
+                    vec3 n = calcNormal(p);                                     \
+                    vec3 color;                                                 \
+                    if (d < .001) {                                             \
+                        float fresnel = pow(1.0 - abs(dot(n, rd)), 2.0);        \
+                        vec3 d = mix(vec3(1), vec3(0.82, 0.45, 0.20), fresnel); \
+                        vec3 ref = reflect(rd, n);                              \
+                        color = d * RECUR(p + ref * 0.4, ref);                  \
+                        color = applyFog(color, t / DIST, getSkyColor(rd));     \
+                    } else {                                                    \
+                        color = getSkyColor(rd);                                \
+                    }                                                           \
+                    return color;                                               \
+                }
+            GEN_RENDER(render4, 1., lastRecur)
+            GEN_RENDER(render3, 1., render4)
+            GEN_RENDER(render2, 1., render3)
+            GEN_RENDER(render1, 15., render2)
+            GEN_RENDER(render, 50., render1)
+            mat3 buildLookAtMatrix(in vec3 ro, in vec3 ta) {
+                vec3 cw = normalize(ta - ro);
+                vec3 up = vec3(0, 1, 0);
+                vec3 cu = normalize(cross(cw, up));
+                vec3 cv = normalize(cross(cu, cw));
+                return mat3(cu, cv, cw);
+            }
+            vec3 vignette(vec3 color, vec2 q, float v) {
+                color *= 0.3 + 0.8 * pow(16.0 * q.x * q.y * (1.0 - q.x) * (1.0 - q.y), v);
+                return color;
+            }
+            vec3 desaturate(in vec3 c, in float a) {
+                float l = dot(c, vec3(1. / 3.));
+                return mix(c, vec3(l), a);
+            }
+            void mainVR(out vec4 fragColor, in vec2 fragCoord, in vec3 ro, in vec3 rd) {
+                mat3 ma = buildLookAtMatrix(vec3(0), vec3(0, 1, -1));
+                ro.y += iTime;
+                fragColor = vec4(render(ma * ro / 3., ma * rd), 1);
+            }
+            void mainImage(out vec4 fragColor, vec2 fragCoord) {
+                vec3 tot = vec3(0.0);
+            #ifdef AA
+                vec2 rook[4];
+                rook[0] = vec2(1. / 8., 3. / 8.);
+                rook[1] = vec2(3. / 8., -1. / 8.);
+                rook[2] = vec2(-1. / 8., -3. / 8.);
+                rook[3] = vec2(-3. / 8., 1. / 8.);
+                for (int n = NO_UNROLL_ZERO; n < 4; ++n) {
+                    // pixel coordinates
+                    vec2 o = rook[n];
+                    vec2 p = (-iResolution.xy + 2.0 * (fragCoord + o)) / iResolution.y;
+            #else   // AA
+                vec2 p = (-iResolution.xy + 2.0 * fragCoord) / iResolution.y;
+            #endif  // AA
+                    // float theta	= radians(360.)*(iMouse.x/iResolution.x-0.5);
+                    // float phi	= radians(90.)*(iMouse.y/iResolution.y-0.5) +
+                    // radians(90.);
+                    float theta = radians(30.);
+                    float phi = radians(90.);
+                    vec3 ro =
+                        2.7 * vec3(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
+                    // vec3 ro = vec3(0.0,.2,4.0);
+                    vec3 ta = vec3(0, -0.2, 0);
+                    mat3 ca = buildLookAtMatrix(ro, ta);
+                    vec3 rd = ca * normalize(vec3(p, 2.0));
+                    ro.z += iTime * 4.;
+                    ro.x += 5.;
+                    vec3 col = render(ro, rd);
+                    tot += col;
+            #ifdef AA
+                }
+                tot /= 4.;
+            #endif
+                tot = desaturate(tot, -0.4);
+                tot = vignette(tot, fragCoord / iResolution.xy, 0.3);
+                fragColor = vec4(pow(tot, vec3(1.5)), 1.0);
+            }</textarea>
     </div>
     <div class="bar-renderer top" style="top: 0;">
     </div>
@@ -34,5 +164,6 @@
 <script src="custom-dialog.js"></script>
 <script src="utils.js"></script>
 <script src="svg.js"></script>
+<script src="glsl.js"></script>
 
 </html>

@@ -13,12 +13,14 @@ async function initializeToolbars() {
     //         bottomIndexs = results[1];
     //     }
     // } catch (error) {
-    topIndexs = [1, 36, 14, 30, 103, 20, 32, 16, 2]
-    // if (document.title.endsWith(".glsl")) {
-    //     topIndexs = [1, 29, 14, 21, 30, 20, 2]
-    // } else {
-    //     topIndexs = [15, 16, 18, 22, 20, 21, 2]
-    // }
+    //topIndexs = [1, 36, 14, 30, 103, 20, 32, 16, 2]
+    
+    if (document.title.endsWith(".glsl")) {
+       topIndexs = [1, 601, 14, 30, 103, 20, 32, 16, 2]
+    } else {
+        // topIndexs = [15, 16, 18, 22, 20, 21, 2]
+        topIndexs = [1, 601, 14, 30, 103, 20, 32, 16, 2]
+    }
     if (document.title.endsWith(".glsl")) {
         bottomIndexs = [3, 29, 101, 102, 37, 24, 35, 25, 28]
     } else if (document.title.startsWith("ShaderToy")) {
@@ -348,62 +350,3 @@ items.push([
         defineFunction();
     }
 ]);
-items.push([
-    103,
-    "code",
-    "重构",
-    () => {
-        refactorFunction();
-    }
-]);
-document.addEventListener('keydown', async evt => {
-    if (evt.ctrlKey) {
-        if (evt.key === 's') {
-            evt.preventDefault();
-            await saveData();
-        }
-    } else {
-        if (evt.key === 'F1') {
-            evt.preventDefault();
-            formatCode()
-
-        } else if (evt.key === 'F2') {
-            evt.preventDefault();
-
-        } else if (evt.key === 'F3') {
-            evt.preventDefault();
-            deleteBlock()
-            //textarea.value = "其他\n" + (await readText()).replace(`var createScene = `, `const createScene = async `)
-        } else if (evt.key === 'F4') {
-            evt.preventDefault();
-            // await saveData();
-            // if (typeof NativeAndroid !== 'undefined') {
-            //     NativeAndroid.launchApp("psycho.euphoria.l", `/svgviewer?id=${id}`);
-            // } else {
-            //     window.open(`${baseUri}/svgviewer?id=${id}`, '_blank');
-            // }
-            formatHead(textarea)
-
-        } else if (evt.key === 'F5') {
-            evt.preventDefault();
-            window.open(`${baseUri}/viewer?id=${(await insertData())}`, '_blank')
-        } else if (evt.key === 'F6') {
-            evt.preventDefault();
-            insertSnippets()
-        } else if (evt.key === 'F7') {
-            evt.preventDefault();
-            updateTags();
-        }
-    }
-
-})
-
-
-async function init() {
-    try {
-        await loadData();
-    } catch (error) {
-    }
-    initializeToolbars()
-}
-init();

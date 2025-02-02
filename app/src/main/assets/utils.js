@@ -1956,3 +1956,51 @@ ${s3}
 ${strings}`
     // textarea.setRangeText("", points[1], points[1]);
 }
+function isTopBraces(start) {
+    let i = start;
+    const s = textarea.value;
+    let count = 0;
+    while (i > 0) {
+        if (s[i] === '{')
+            count++;
+        else if (s[i] === '}')
+            count--;
+        i--;
+    }
+    return count === 1;
+}
+function isBottomBraces(start) {
+    let i = start;
+    const s = textarea.value;
+    let count = 0;
+    while (i < s.length) {
+        if (s[i] === '{')
+            count--;
+        else if (s[i] === '}')
+            count++;
+        i++;
+    }
+    return count === 1;
+}
+function findFunc() {
+    let i = textarea.selectionStart;
+    let j = textarea.selectionEnd;
+    const s = textarea.value;
+    while (i > 0) {
+        if (s[i] === '{' && isTopBraces(i)) {
+            break;
+        }
+        i--;
+    }
+    while (i > 0 && s[i - 1] !== '}') {
+        i--;
+    }
+    while (j < s.length) {
+        if (s[j] === '}' && isBottomBraces(j)) {
+            j++;
+            break;
+        }
+        j++;
+    }
+    return [i, j]
+}

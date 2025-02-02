@@ -506,7 +506,8 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
                                                                         [](const std::smatch &m) {
                                                                             static const char query[]
                                                                                     = R"(SELECT content FROM svg where id = ?1)";
-                                                                            db::QueryResult fetch_row = db::query<query>(m.str(1));
+                                                                            db::QueryResult fetch_row = db::query<query>(
+                                                                                    m.str(1));
                                                                             std::string content;
                                                                             if (fetch_row(content)) {
 
@@ -845,6 +846,22 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
         res.set_header("Access-Control-Allow-Origin", "*");
         handleGemini(req, res
         );
+    });
+    server.Get("/shadertoy", [](
+            const httplib::Request &req, httplib::Response
+    &res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        auto q = req.get_param_value("q");
+        httplib::SSLClient cli("www.shadertoy.com", 443);
+        cli.enable_server_certificate_verification(false);
+        auto result = cli.Post("/shadertoy", {}, "s=%7B%20%22shaders%22%20%3A%20%5B%22" + q +
+                                                 "%22%5D%20%7D&nt=1&nl=1&np=1",
+                               "application/x-www-form-urlencoded");
+        if (result) {
+            res.set_content(result->body, "text/plain");
+            return;
+        }
+        res.status = 404;
     });
     server.Get("/download", [](
             const httplib::Request &req, httplib::Response

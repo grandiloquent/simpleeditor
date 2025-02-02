@@ -98,3 +98,20 @@ void handleGemini(const httplib::Request &req, httplib::Response &res) {
     }
     res.status = 404;
 }
+
+void handleShaderToy(const httplib::Request &req, httplib::Response &res) {
+
+    auto q = req.get_param_value("q");
+    //httplib::Client cli("192.168.8.190", 8000);
+    httplib::SSLClient cli("www.shadertoy.com", 443);
+    cli.enable_server_certificate_verification(false);
+    // /v1beta/models/gemini-pro:generateContent?key=
+    nlohmann::json j;
+    j["contents"][0]["parts"][0]["text"] = q;
+    auto result = cli.Post("/shadertoy", {}, "s=%7B%20%22shaders%22%20%3A%20%5B%22" + q + "%22%5D%20%7D&nt=1&nl=1&np=1", "application/x-www-form-urlencoded");
+    if (result) {
+        res.set_content(result->body, "text/plain");
+        return;
+    }
+    res.status = 404;
+}
