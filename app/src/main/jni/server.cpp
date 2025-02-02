@@ -860,9 +860,9 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
         ss << "%22%5D%20%7D&nt=1&nl=1&np=1";
         httplib::Headers headers = {
                 {"user-agent",
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"},
-
-                        };
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"},
+                {"referer", "https://www.shadertoy.com/view/" + q}
+        };
         auto result = cli.Post("/shadertoy", headers,
                                ss.str(),
                                "application/x-www-form-urlencoded");

@@ -19,7 +19,7 @@ async function initializeToolbars() {
        topIndexs = [1, 601, 14, 30, 103, 20, 32, 16, 2]
     } else {
         // topIndexs = [15, 16, 18, 22, 20, 21, 2]
-        topIndexs = [1, 601, 14, 30, 103, 20, 32, 16, 2]
+        topIndexs = [1, 601, 602, 30, 103, 603, 32, 16, 2]
     }
     if (document.title.endsWith(".glsl")) {
         bottomIndexs = [3, 29, 101, 102, 37, 24, 35, 25, 28]

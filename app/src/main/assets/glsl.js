@@ -1,7 +1,7 @@
 items.push([
     103,
     "code",
-    "重构",
+    "函数",
     () => {
         refactorFunction();
     }
@@ -12,9 +12,64 @@ items.push([
     "code",
     "隔离",
     () => {
-        findFunc();
+        const buf = splitFunc();
+        mS1 = buf[0];
+        mS2 = buf[2];
+        textarea.value = buf[1]
     }
 ]);
+items.push([
+    602,
+    "content_cut",
+    "剪切",
+    () => {
+        const buf = splitFunc();
+        textarea.value = buf[0] + buf[2];
+        writeText(buf[1])
+    }]);
+
+items.push([
+    603,
+    "code",
+    "变量",
+    () => {
+        const buf = splitFunc();
+        let i = textarea.selectionStart;
+        let j = textarea.selectionEnd;
+        const s = textarea.value;
+        let value;
+        if (/[0-9.-]/.test(s[i])) {
+            while (i > 0) {
+                if (/[0-9.-]/.test(s[i - 1]))
+                    i--;
+                else
+                    break;
+            }
+            while (j < s.length) {
+                j++
+                if (!/[0-9.-]/.test(s[j])) {
+                    break;
+                }
+            }
+            value = textarea.value.substring(i, j);
+        }
+        if (!value) return;
+        let suffix = 1;
+        let name = `n${suffix}`;
+        while (new RegExp("\\b" + name + "\\b").test(buf[1])) {
+            suffix++;
+            name = `n${suffix}`;
+        }
+      
+        let body =value.endsWith(".")? 
+        buf[1].replaceAll(new RegExp("\\b" + escapeRegExp(value) + "(?![0-9])",'g'), name)
+        : buf[1].replaceAll(new RegExp("\\b" + escapeRegExp(value) + "\\b",'g'), name);
+
+        textarea.value = buf[0] + body.replace('{',`{
+float ${name} = ${value};
+` ) + buf[2];
+        //writeText(buf[1])
+    }]);
 document.addEventListener('keydown', async evt => {
     if (evt.ctrlKey) {
         if (evt.key === 's') {

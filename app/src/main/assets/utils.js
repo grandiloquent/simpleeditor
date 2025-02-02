@@ -117,13 +117,15 @@ function insertItem(indexs, selector, klass) {
         bottomBar.appendChild(div);
     })
 }
+let mS1 = "";
+let mS2 = "";
 async function saveData() {
     let s = textarea.value.trim();
     let nid = id ? parseInt(id, 10) : 0;
     let body = {
         id: nid,
-        title: substringBefore(s, "\n").trim(),
-        content: substringAfter(s, "\n").trim()
+        title: mS1 ? substringBefore(mS1, "\n").trim() : substringBefore(s, "\n").trim(),
+        content: (mS1 ? substringAfter(mS1, "\n").trim() + s : substringAfter(s, "\n").trim()) + mS2
     };
     // await submitNote(getBaseUri(), JSON.stringify(body));
     // document.getElementById('toast').setAttribute('message', '成功');
@@ -1264,6 +1266,7 @@ function fun(textarea) {
         parts = parts.slice(1);
     }
     if (!/A-Z/.test(name)) {
+        1
         name = `create${name.substring(0, 1).toUpperCase()}${name.slice(1)}`
     }
     s = `
@@ -2003,4 +2006,21 @@ function findFunc() {
         j++;
     }
     return [i, j]
+}
+function splitFunc() {
+    const array = findFunc();
+    const s = textarea.value;
+    const buf = [];
+    for (let index = 0; index < array.length; index++) {
+        if (index === 0) buf.push(s.substring(0, array[index]));
+        else if (index + 1 === array.length) {
+            buf.push(s.substring(array[index - 1], array[index]))
+            buf.push(s.substring(array[index]))
+        }
+    }
+    return buf;
+}
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // $& means the whole matched string
 }

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
-
+    <script src="custom-toast.js"></script>
 </head>
 
 <body>
@@ -66,7 +66,7 @@
             overflow-x: auto;
             overflow-y: hidden;
             height: 48px;
-            
+
         }
 
         .bar-contents::-webkit-scrollbar {
@@ -89,7 +89,8 @@
             justify-content: center;
             flex-shrink: 0;
         }
-        .bar-contents>div:first-of-type{
+
+        .bar-contents>div:first-of-type {
             margin-left: 16px;
         }
     </style>
@@ -116,6 +117,7 @@
             </div>
         </a>
     </div>
+    <custom-toast id="toast"></custom-toast>
 </body>
 <script src="shared.js"></script>
 <script src="index.js"></script>
