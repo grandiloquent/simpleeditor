@@ -1784,11 +1784,14 @@ function copyName() {
 function search() {
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
-    while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start - 1])) {
-        start--;
-    }
-    while (end < textarea.value.length && /[A-Za-z0-9_]/.test(textarea.value[end])) {
-        end++;
+    if (start === end) {
+        while (start - 1 > -1 && /[A-Za-z0-9_]/.test(textarea.value[start - 1])) {
+            start--;
+        }
+
+        while (end < textarea.value.length && /[A-Za-z0-9_]/.test(textarea.value[end])) {
+            end++;
+        }
     }
     let s = textarea.value.substring(start, end);
 
@@ -1933,30 +1936,21 @@ ${strings}`
 }
 
 function refactorFunction() {
+
     const points = findExtendPosition(textarea);
     let i = points[0];
     let j = points[1];
     const s = textarea.value.substring(i, j).trim();
 
-    let ss = textarea.value.substring(0, i).trim();
-    const s1 = substringBefore(ss, "\n")
-    const s2 = substringAfter(ss, "\n");
+    textarea.setRangeText(`${substringBefore(s, '\n')}();`, points[0], points[1]);
+    const buf = splitFunc();
 
-    const s3 = textarea.value.substring(j);
+    textarea.value = buf[0] + `
+float ${substringBefore(s, '\n')}(){
+    ${substringAfter(s, '\n')}
 
-
-    const s4 = substringBefore(s, "\n")
-    const s5 = substringAfter(s, "\n");
-
-    let strings = `void ${s4}(){
-${s5}    
-}`
-    textarea.value = `
-${s1}
-void ${s4}();    
-${s2}
-${s3}
-${strings}`
+    return .1;
+    }`+ buf[1] + buf[2];
     // textarea.setRangeText("", points[1], points[1]);
 }
 function isTopBraces(start) {
