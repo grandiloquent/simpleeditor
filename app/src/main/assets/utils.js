@@ -950,25 +950,25 @@ async function loadTags() {
 }
 async function updateTags() {
     let res;
-    let matches = /JavaScript|GLSL|Three/.exec(textarea.value);
-    if (matches) {
-        try {
-            res = await fetch(`${baseUri}/svgtag`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    id: parseInt(id),
-                    names: [matches[0]]
-                })
-            });
-            if (res.status !== 200) {
-                throw new Error();
-            }
-            toast.setAttribute('message', '成功');
-        } catch (error) {
-            toast.setAttribute('message', '错误');
-        }
-        return;
-    }
+    // let matches = /JavaScript|GLSL|Three/.exec(textarea.value);
+    // if (matches) {
+    //     try {
+    //         res = await fetch(`${baseUri}/svgtag`, {
+    //             method: 'POST',
+    //             body: JSON.stringify({
+    //                 id: parseInt(id),
+    //                 names: [matches[0]]
+    //             })
+    //         });
+    //         if (res.status !== 200) {
+    //             throw new Error();
+    //         }
+    //         toast.setAttribute('message', '成功');
+    //     } catch (error) {
+    //         toast.setAttribute('message', '错误');
+    //     }
+    //     return;
+    // }
     const dialog = document.createElement('custom-dialog');
     const div = document.createElement('textarea');
     div.style = `
