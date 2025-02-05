@@ -1504,7 +1504,7 @@ EffectPass.prototype.NewTexture = function( wa, slot, url, buffers, cubeBuffers,
                 if( me.mTextureCallbackFun!==null )
                     me.mTextureCallbackFun( me.mTextureCallbackObj, slot, texture.mImage, true, 2, 1, -1.0, me.mID );
             }
-            texture.mImage.src = "/media/previz/cubemap00.png";
+            texture.mImage.src = "/cubemap00.png";
 
             this.mEffect.ResizeCubemapBuffer(0, 1024, 1024 );
 
@@ -1578,7 +1578,7 @@ EffectPass.prototype.NewTexture = function( wa, slot, url, buffers, cubeBuffers,
                 if( me.mTextureCallbackFun!==null )
                     me.mTextureCallbackFun( me.mTextureCallbackObj, slot, texture.mImage, true, 7, 1, -1.0, me.mID );
             }
-            texture.mImage.src = "/media/previz/webcam.png";
+            texture.mImage.src = "/webcam.png";
         }
         
         loadImageInsteadOfWebCam();

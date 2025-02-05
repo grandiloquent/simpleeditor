@@ -2,18 +2,19 @@
 
 
 std::string Trans(const std::string &q, const std::string &to) {
-    httplib::Client cli("translate.google.com", 80);
+    httplib::SSLClient cli("translate.google.com", 443);
+    cli.enable_server_certificate_verification(false);
     std::stringstream ss;
     ss << "/translate_a/single?client=gtx&sl=auto&tl=";
     ss << to;
     ss << "&dt=t&dt=bd&ie=UTF-8&oe=UTF-8&dj=1&source=icon&q=";
     ss << EncodeUrl(q);
+    LOGE("http://translate.google.com%s", ss.str().c_str());
     if (auto res = cli.Get(
             ss.str(),
-            {{"User-Agent",
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-              "(KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"}})) {
-
+            {{"user-agent",
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"}})) {
+        LOGE("%d", res->status);
         return res->body;
     } else {
         return {};
@@ -108,7 +109,9 @@ void handleShaderToy(const httplib::Request &req, httplib::Response &res) {
     // /v1beta/models/gemini-pro:generateContent?key=
     nlohmann::json j;
     j["contents"][0]["parts"][0]["text"] = q;
-    auto result = cli.Post("/shadertoy", {}, "s=%7B%20%22shaders%22%20%3A%20%5B%22" + q + "%22%5D%20%7D&nt=1&nl=1&np=1", "application/x-www-form-urlencoded");
+    auto result = cli.Post("/shadertoy", {}, "s=%7B%20%22shaders%22%20%3A%20%5B%22" + q +
+                                             "%22%5D%20%7D&nt=1&nl=1&np=1",
+                           "application/x-www-form-urlencoded");
     if (result) {
         res.set_content(result->body, "text/plain");
         return;

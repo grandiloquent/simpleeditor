@@ -175,7 +175,7 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
     std::string d{"application/octet-stream"};
     httplib::Server server;
     server.Get(
-            R"(/(.+\.(?:js|css|html|xhtml|ttf|png|jpg|jpeg|gif|json|svg|wasm|babylon|blend|glb|ogg|txt|hdr|pdb|obj))?)",
+            R"(/(.+\.(?:js|css|html|xhtml|ttf|png|jpg|jpeg|gif|json|svg|wasm|babylon|blend|glb|ogg|txt|hdr|pdb|obj|mp3|mp4))?)",
             [&t, mgr, &d](const httplib::Request &req,
                           httplib::Response &res) {
                 res.set_header("Access-Control-Allow-Origin", "*");
@@ -707,6 +707,7 @@ void main( void ){shadertoy_out_color = vec4(1.0,1.0,1.0,1.0);vec4 color = vec4(
         res.set_header("Access-Control-Allow-Origin", "*");
         auto q = req.get_param_value("q");
         auto to = req.get_param_value("to");
+
 //LOGE("=========%s",EncodeUrl(q).c_str());
         auto s = Trans(q, to);
         res.

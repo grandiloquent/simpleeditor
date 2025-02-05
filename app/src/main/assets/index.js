@@ -136,3 +136,26 @@ document.getElementById('add').addEventListener('click', async evt => {
     window.open(`${baseUri}/viewer?id=${await res.text()}`, '_blank')
 });
 renderTags();
+document.addEventListener('keydown', async evt => {
+
+    if (evt.key === 'F1') {
+        evt.preventDefault();
+        const s = await readText();
+    const id = /(?<=\/view\/)[a-zA-Z0-9]+/.exec(s)[0];
+    let res = await fetch(`${baseUri}/shadertoy?q=${id}`)
+    const obj = await res.json();
+    console.log(obj)
+    res = await fetch(`${baseUri}/svg`, {
+        method: 'POST',
+        body: JSON.stringify({
+            id: 0,
+            title: `ShaderToy`,
+            content: `${JSON.stringify(obj)}`
+        })
+    });
+    toast.setAttribute('message', '成功');
+    window.open(`${baseUri}/viewer?id=${await res.text()}`, '_blank')
+
+    }
+})
+

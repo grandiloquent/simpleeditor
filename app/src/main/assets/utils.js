@@ -239,7 +239,7 @@ ${js_beautify(after, options)}`;
 ${formatGlslCode(after)}`;;
     } else if (document.title.endsWith(".css")) {
         textarea.value = css_beautify(textarea.value, options);
-    } else if (document.title.endsWith(".js")) {
+    } else if (document.title.endsWith(".js")||document.title.startsWith("Shader")) {
         textarea.value = js_beautify(textarea.value, options);
     } else {
         textarea.value = html_beautify(textarea.value, options);
