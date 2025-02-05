@@ -198,8 +198,64 @@ public class MainActivity extends Activity {
         registerForContextMenu(webView);
     }
 
+    public static void shaderToy(Context context, String userAgent, String uri) {
+        new Thread(() -> {
+            String res = copyShaderToy(context, uri, PreferenceManager.getDefaultSharedPreferences(context)
+                    .getString("shadertoy", null), userAgent);
+            Log.e("B5aOx2", String.format("shaderToy, %s", res));
+            try {
+                String u = String.format("http://%s:8100/svg", Shared.getDeviceIP(context));
+                HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
+                c.setRequestMethod("POST");
+                c.setRequestProperty("charset", "utf-8");
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("id",0);
+                jsonObject.put("title", "ShaderToy ");
+                jsonObject.put("content", res);
+                byte[] buffer = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+                c.getOutputStream().write(buffer, 0, buffer.length);
+                Shared.readString(c);
+            } catch (Exception ignored) {
+            }
+            Shared.postOnMainThread(() -> {
+                Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show();
+            });
+
+        }).start();
+    }
+
     public static native String startServer(Context context, AssetManager assetManager, String host, int port);
 
+    private static String copyShaderToy(Context context, String uri, String cookie, String userAgent) {
+        DataOutputStream dos = null;
+        String id = Shared.substringBefore(Shared.substringAfter(uri, "/view/"), "/");
+        String params = "s=%7B%20%22shaders%22%20%3A%20%5B%22" + id + "%22%5D%20%7D&nt=1&nl=1&np=1";
+        try {
+            HttpURLConnection c = (HttpURLConnection) new URL("https://www.shadertoy.com/shadertoy").openConnection();
+            c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            c.setRequestProperty("charset", "utf-8");
+            c.setRequestProperty("Content-Length", Integer.toString(params.getBytes().length));
+            c.setRequestProperty("Cookie", cookie);
+            c.setRequestProperty("Referer", uri);
+            c.setRequestProperty("User-Agent", userAgent);
+            c.setRequestMethod("POST");
+            dos = new DataOutputStream(c.getOutputStream());
+            dos.writeBytes(params);
+            dos.flush();
+            return Shared.readString(c);
+
+        } catch (Exception e) {
+            Log.e("B5aOx2", String.format("copyShaderToy, %s", e));
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return null;
+    }
 
     private void initialize() {
         requestNotificationPermission(this);
@@ -416,62 +472,5 @@ public class MainActivity extends Activity {
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public static void shaderToy(Context context, String userAgent, String uri) {
-        new Thread(() -> {
-            String res = copyShaderToy(context, uri, PreferenceManager.getDefaultSharedPreferences(context)
-                    .getString("shadertoy", null), userAgent);
-            Log.e("B5aOx2", String.format("shaderToy, %s", res));
-            try {
-                String u = String.format("http://%s:8100/svg", Shared.getDeviceIP(context));
-                HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
-                c.setRequestMethod("POST");
-                c.setRequestProperty("charset", "utf-8");
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("id",0);
-                jsonObject.put("title", "ShaderToy ");
-                jsonObject.put("content", res);
-                byte[] buffer = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
-                c.getOutputStream().write(buffer, 0, buffer.length);
-                Shared.readString(c);
-            } catch (Exception ignored) {
-            }
-            Shared.postOnMainThread(() -> {
-                Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show();
-            });
-
-        }).start();
-    }
-
-    private static String copyShaderToy(Context context, String uri, String cookie, String userAgent) {
-        DataOutputStream dos = null;
-        String id = Shared.substringBefore(Shared.substringAfter(uri, "/view/"), "/");
-        String params = "s=%7B%20%22shaders%22%20%3A%20%5B%22" + id + "%22%5D%20%7D&nt=1&nl=1&np=1";
-        try {
-            HttpURLConnection c = (HttpURLConnection) new URL("https://www.shadertoy.com/shadertoy").openConnection();
-            c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            c.setRequestProperty("charset", "utf-8");
-            c.setRequestProperty("Content-Length", Integer.toString(params.getBytes().length));
-            c.setRequestProperty("Cookie", cookie);
-            c.setRequestProperty("Referer", uri);
-            c.setRequestProperty("User-Agent", userAgent);
-            c.setRequestMethod("POST");
-            dos = new DataOutputStream(c.getOutputStream());
-            dos.writeBytes(params);
-            dos.flush();
-            return Shared.readString(c);
-
-        } catch (Exception e) {
-            Log.e("B5aOx2", String.format("copyShaderToy, %s", e));
-        } finally {
-            if (dos != null) {
-                try {
-                    dos.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-        return null;
     }
 }
