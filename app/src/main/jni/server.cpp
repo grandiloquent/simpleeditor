@@ -486,6 +486,21 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
 
 
                        } else if (title.starts_with("JavaScript")) {
+                           auto str = std::string{content.data(), content.size()};
+                           std::string output_text = std::regex_replace(str,
+                                                                        std::regex(R"(///file\?id\=(\d+))"),
+                                                                        [](const std::smatch &m) {
+                                                                            static const char query[]
+                                                                                    = R"(SELECT content FROM svg where id = ?1)";
+                                                                            db::QueryResult fetch_row = db::query<query>(
+                                                                                    m.str(1));
+                                                                            std::string content;
+                                                                            if (fetch_row(content)) {
+
+                                                                                return content;
+                                                                            }
+                                                                            return std::string{};
+                                                                        });
                            ss << R"(<!DOCTYPE html>
 <html lang="en">
 
@@ -495,7 +510,7 @@ void StartServer(JNIEnv *env, jobject assetManager, const std::string &host, int
     <title>)" << title << R"(</title>
 </head>
 
-<body>)" << content << R"(</body>
+<body>)" << output_text << R"(</body>
 
 </html>)";
 

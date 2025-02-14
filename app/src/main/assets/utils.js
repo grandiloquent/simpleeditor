@@ -15,7 +15,7 @@ if (!String.prototype.replaceAll) {
     };
 }
 
-let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.35.56:8100" : "..";
+let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.59.132:8100" : "..";
 const searchParams = new URL(window.location).searchParams;
 let id = searchParams.get('id');
 const path = searchParams.get('path');
@@ -228,7 +228,14 @@ ${js_beautify(after, options)}`;
         }
 
     } else if (document.title.startsWith("JavaScript")) {
-        textarea.value = html_beautify(textarea.value, options)
+        const s = textarea.value.trim();
+        const before = substringBefore(s, '\n').trim();
+        const after = substringAfter(s, '\n').trim();
+        //.split('\n').filter(x => x.trim()).join('\n').trim();
+        //textarea.value = js_beautify(textarea.value, options);
+        textarea.value = `${before} 
+    
+${js_beautify(after, options)}`;
     } else if (document.title.endsWith(".glsl")) {
         const s = textarea.value.trim();
         const before = substringBefore(s, '\n').trim();
@@ -239,7 +246,7 @@ ${js_beautify(after, options)}`;
 ${formatGlslCode(after)}`;;
     } else if (document.title.endsWith(".css")) {
         textarea.value = css_beautify(textarea.value, options);
-    } else if (document.title.endsWith(".js")||document.title.startsWith("Shader")) {
+    } else if (document.title.endsWith(".js") || document.title.startsWith("Shader")) {
         textarea.value = js_beautify(textarea.value, options);
     } else {
         textarea.value = html_beautify(textarea.value, options);
@@ -1207,23 +1214,25 @@ function openFile() {
         start--;
     }
     while (end < textarea.value.length && textarea.value[end + 1] !== '"' && textarea.value[end + 1] !== "'") {
-        console.log(end)
         end++;
     }
     const s = textarea.value.substring(start, end + 1);
-
+    console.log(s);
     if (/file\?id=\d+/.test(s)) {
+        let id = /(?<=file\?id\=)\d+/.exec(s)
         if (typeof NativeAndroid !== 'undefined') {
-            NativeAndroid.open(window.location.origin + `/svg.html?id=${substringAfterLast(s, '=')}`);
-        } else
-            window.open(`/svg.html?id=${substringAfterLast(s, '=')}`, '_blank');
+            NativeAndroid.open(window.location.origin + `/svg.html?id=${id[0]}`);
+        } else {
+          window.open(`/svg.html?id=${id[0]}`, '_blank');
+        }
     } else {
         let id = /(?<=file\?id\=)\d+/.exec(textarea.value)
         if (id) {
             if (typeof NativeAndroid !== 'undefined') {
                 NativeAndroid.open(window.location.origin + `/svg.html?id=${id[0]}`);
-            } else
-                window.open(`/svg.html?id=${id[0]}`, '_blank');
+            } else {
+               // window.open(`/svg.html?id=${id[0]}`, '_blank');
+            }
 
         }
     }
