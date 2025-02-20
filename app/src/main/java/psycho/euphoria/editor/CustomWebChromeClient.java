@@ -8,9 +8,11 @@ import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebChromeClient.CustomViewCallback;
+import android.webkit.WebChromeClient.FileChooserParams;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
-
+import android.widget.Toast;
 
 
 public class CustomWebChromeClient extends WebChromeClient {
@@ -20,15 +22,34 @@ public class CustomWebChromeClient extends WebChromeClient {
     protected FrameLayout mFullscreenContainer;
     private int mOriginalOrientation;
     private int mOriginalSystemUiVisibility;
+    private boolean mIsShowMessage;
+    private StringBuilder mStringBuilder = new StringBuilder();
 
     public CustomWebChromeClient(MainActivity mainActivity) {
         mMainActivity = mainActivity;
     }
 
+    public void setShowMessage(boolean showMessage) {
+        mIsShowMessage = showMessage;
+    }
+
+    public boolean getShowMessage() {
+        return mIsShowMessage;
+    }
+
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-        Log.e("B5aOx2", String.format("onConsoleMessage, %s\n%s\n%s", consoleMessage.message(), consoleMessage.lineNumber(),consoleMessage.sourceId()));
+        if (mIsShowMessage) {
+            mStringBuilder.append(String.format("%d:%s", consoleMessage.lineNumber(), consoleMessage.message()));
+        }
         return super.onConsoleMessage(consoleMessage);
+    }
+
+    public String getMessages() {
+        String content = mStringBuilder.toString();
+        mStringBuilder.setLength(0);
+        mStringBuilder = new StringBuilder();
+        return content;
     }
 
     public void onHideCustomView() {

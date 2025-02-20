@@ -46,8 +46,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static psycho.euphoria.editor.CustomWebChromeClient.FILE_CHOOSER_REQUEST_CODE;
-
 
 public class MainActivity extends Activity {
     public static final int DEFAULT_PORT = 8100;
@@ -209,7 +207,7 @@ public class MainActivity extends Activity {
                 c.setRequestMethod("POST");
                 c.setRequestProperty("charset", "utf-8");
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("id",0);
+                jsonObject.put("id", 0);
                 jsonObject.put("title", "ShaderToy ");
                 jsonObject.put("content", res);
                 byte[] buffer = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
@@ -309,7 +307,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         CustomWebChromeClient customWebChromeClient = mWebView1.getVisibility() == View.VISIBLE ?
                 mCustomWebChromeClient1 : mCustomWebChromeClient2;
-        if (requestCode == FILE_CHOOSER_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == CustomWebChromeClient.FILE_CHOOSER_REQUEST_CODE && resultCode == RESULT_OK) {
             if (customWebChromeClient.ValueCallback == null) {
                 super.onActivityResult(requestCode, resultCode, data);
                 return;
@@ -399,6 +397,8 @@ public class MainActivity extends Activity {
         menu.add(0, 10, 0, "ShaderToy");
         menu.add(0, 6, 0, "收藏");
         menu.add(0, 7, 0, "历史");
+        menu.add(0, 12, 0, "复制日志");
+        menu.add(0, 11, 0, "日志");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -468,7 +468,16 @@ public class MainActivity extends Activity {
                 break;
             case 10:
                 //webView.loadUrl("https://gemini.google.com/");
-                shaderToy(this,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",Shared.getText(this).toString());
+                shaderToy(this, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", Shared.getText(this).toString());
+                break;
+            case 11:
+                CustomWebChromeClient cc = (CustomWebChromeClient) webView.getWebChromeClient();
+                cc.setShowMessage(!cc.getShowMessage());
+                break;
+            case 12:
+                CustomWebChromeClient cc1 = (CustomWebChromeClient) webView.getWebChromeClient();
+                String content = cc1.getMessages();
+                Shared.setText(this, content);
                 break;
         }
         return super.onOptionsItemSelected(item);

@@ -228,6 +228,7 @@ ${js_beautify(after, options)}`;
         }
 
     } else if (document.title.startsWith("JavaScript")) {
+        console.log("--------------------->")
         const s = textarea.value.trim();
         const before = substringBefore(s, '\n').trim();
         const after = substringAfter(s, '\n').trim();
