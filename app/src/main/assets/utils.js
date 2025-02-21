@@ -15,7 +15,7 @@ if (!String.prototype.replaceAll) {
     };
 }
 
-let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.59.132:8100" : "..";
+let baseUri = window.location.host === "127.0.0.1:5500" ? "http://192.168.8.101:8100" : "..";
 const searchParams = new URL(window.location).searchParams;
 let id = searchParams.get('id');
 const path = searchParams.get('path');
@@ -1999,7 +1999,10 @@ function findFunc() {
         }
         i--;
     }
-    while (i > 0 && s[i - 1] !== '}') {
+    while (i > 0 && s[i - 1] !== '(') {
+        i--;
+    }
+    while (i > 0 && s[i - 1] !== '\n') {
         i--;
     }
     while (j < s.length) {

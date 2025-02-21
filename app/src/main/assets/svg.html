@@ -23,123 +23,210 @@
 
 <body>
     <div class="wrapper" style="padding: 49px 0 49px 0;">
-        <textarea id="textarea" style="font-size: 16px">
-            vec4 turnPage(vec2 fragCoord) {
-                // General calculations
-                vec2 uv = fragCoord.xy / iResolution.yy;
-                float ratio = iResolution.x / iResolution.y;
-                // As long as one doesn't click on the canvas, the animation runs
-                float n1 = iTime / 10.;
-                bool firstcycle = isFirstCycle(n1);
-                vec2 mpoint = calculateMiddlePoint(n1);
-                vec2 midmpoint = mpoint * 0.5;
-                float angle = -atan(mpoint.x / mpoint.y) + pi * 0.5;
-                vec2 uv2 = uv;
-                vec2 uvr = rotateVec(uv2 - midmpoint / iResolution.yy, angle);
-                float mdist = distance(fragCoord, mpoint);
-                float e = e0 * pow(mdist / iResolution.y, 2.) +
-                          0.02 * e0 * smoothstep(0., 0.12, mdist / iResolution.y);
-                float pagefunc = pageFunction(uvr.x, e);
-                vec2 uvr2 = vec2(pagefunc, uvr.y);
-                vec2 uvr3 =
-                    rotateVec(uvr2, -angle) - vec2(1., -1.) * midmpoint / iResolution.yy;
-                vec2 uvr2b = vec2(-pagefunc, uvr.y);
-                vec2 uvr3b =
-                    rotateVec(uvr2b, -angle) - vec2(1., -1.) * midmpoint / iResolution.yy;
-                vec4 i;
-                // Turned page
-                if (uvr.x > 0. && uvr3b.y > 0.) {
-                    vec2 uvcorr = vec2(ratio, 1.);
-                    vec2 uvrcorr = rotateVec(uvcorr - midmpoint / iResolution.yy, angle);
-                    float pagefunccorr = pageFunction(uvrcorr.x, e);
-                    vec2 uvrcorr2 = vec2(-pagefunccorr, uvrcorr.y);
-                    vec2 uvrcorr3 = rotateVec(uvrcorr2, -angle) -
-                                    vec2(1., -1.) * midmpoint / iResolution.yy;
-                    float pagefuncder = pageFunctionDer(uvr.x, e);
-                    float intfac = 1. - diffint * (1. - 1. / pagefuncder);
-                    if (uvr3.x >= 0. || uvr3.y <= 0.) {
-                        // Top of the turned page
-                        float mdists = distance(fragCoord, mpoint) * 0.7 - 55.;
-                        float es = e0 * pow(mdists / iResolution.y, 2.) +
-                                   0.02 * e0 * smoothstep(0., 0.08, mdist / iResolution.y);
-                        vec2 uvrs = rotateVec(
-                            uv2 - midmpoint / iResolution.yy - shadowoffset, angle);
-                        float pagefuncs = pageFunction(uvrs.x + 0.015, es - 0.001);
-                        vec2 uvr2s = vec2(pagefuncs, uvrs.y);
-                        vec2 uvr3s = rotateVec(uvr2s, -angle) -
-                                     vec2(1., -1.) * midmpoint / iResolution.yy;
-                        float difft = calculateShadow(uvr3s, intfac);
-                        vec2 n3 = mod((uvr3b - uvrcorr3) / vec2(-ratio, 1.), 1.);
-                        if (firstcycle) {
-                            i = difft * texture(iChannel0, n3);
-                        } else
-                            i = difft * texture(iChannel1, n3);
-                    } else {
-                        float diffb = intfac * (1. - ambientb) + ambientb;
-                        if (firstcycle) {
-                            i = diffb *
-                                mix(texture(iChannel0,
-                                            mod((uvr3 - uvrcorr3) / vec2(-ratio, 1.), 1.)),
-                                    vec4(.4, .4, .4, 1.), bcolorMix);
-                        } else {
-                            i = diffb *
-                                mix(texture(iChannel1,
-                                            mod((uvr3 - uvrcorr3) / vec2(-ratio, 1.), 1.)),
-                                    vec4(.4, .4, .4, 1.), bcolorMix);
-                        }
-                        float spec = calculateSpec(diffb, intfac, uvr);
-                        i = mix(i, vec4(1.0), spec);
-                    }
-                } else {
-                    // "Background" with simple shadow
-                    vec2 mpointbg = vec2(0.2, 0.01);
-                    vec2 midmpointbg = mpointbg * 0.5;
-                    float mdistbg = distance(fragCoord, mpointbg);
-                    float ebg = e0 * pow(mdistbg / iResolution.y, 2.) +
-                                0.01 * e0 * smoothstep(0., 0.12, mdistbg / iResolution.y);
-                    float anglebg = 0.001;  //- atan(mpointbg.x/mpointbg.y) + pi*0.5;
-                    vec2 uvrbg = rotateVec(uv - midmpointbg / iResolution.yy, anglebg);
-                    // float pagefuncbg = mix(uvrbg.x, pageFunction(uvrbg.x, ebg),
-                    // clamp(uvrbg.x*5., 0., 1.));
-                    float pagefuncbg;
-                    if (uvrbg.x < 0.15)
-                        pagefuncbg = uvrbg.x;
-                    else
-                        pagefuncbg = mix(uvrbg.x, pageFunction(uvrbg.x, ebg),
-                                         smoothstep(mpoint.x / iResolution.x + 0.1,
-                                                    mpoint.x / iResolution.x, uvrbg.x));
-                    vec2 uvr2bbg = vec2(-pagefuncbg, uvrbg.y);
-                    vec2 uvr3bbg = rotateVec(uvr2bbg, -anglebg) -
-                                   vec2(1., -1.) * midmpointbg / iResolution.yy;
-                    vec2 uvcorrbg = vec2(ratio, 1.);
-                    vec2 uvrcorrbg =
-                        rotateVec(uvcorrbg - midmpointbg / iResolution.yy, anglebg);
-                    float pagefunccorrbg = pageFunction(uvrcorrbg.x, ebg);
-                    vec2 uvrcorr2bg = vec2(-pagefunccorrbg, uvrcorrbg.y);
-                    vec2 uvrcorr3bg = rotateVec(uvrcorr2bg, -anglebg) -
-                                      vec2(1., -1.) * midmpointbg / iResolution.yy;
-                    float pagefuncderbg = pageFunctionDer(uvrbg.x, ebg);
-                    float intfacbg = 1. - diffint * (1. - 1. / pagefuncderbg);
-                    float difftbg = intfacbg * (1. - ambientt) + ambientt;
-                    if (firstcycle)
-                        i = colors ? difftbg * vec4(0.3, 0.3, 1., 1.)
-                                   : texture(iChannel1,
-                                             mod((uvr3bbg - uvrcorr3bg) / vec2(-ratio, 1.),
-                                                 1.));
-                    else
-                        i = colors ? difftbg * vec4(0.3, 0.3, 1., 1.)
-                                   : texture(iChannel0,
-                                             mod((uvr3bbg - uvrcorr3bg) / vec2(-ratio, 1.),
-                                                 1.));
-                    float bgshadow = 1. +
-                                     shadowint * smoothstep(-0.08 + shadowsmoothness * 4.,
-                                                            -0.08, uvr3b.y) -
-                                     shadowint;
-                    if (uvr3b.y < 0.) i *= bgshadow;
-                }
-                return i;
-            }
-            </textarea>
+        <textarea id="textarea" style="font-size: 16px">JavaScript Babylon.js 物理
+    
+///file?id=1383
+
+async function createGlassMaterial(scene) {
+  const mat = new BABYLON.PBRMaterial("sphereMat", scene);
+  mat.metallic = 0;
+  mat.roughness = 0;
+  mat.alpha = 0.1;
+  mat.separateCullingPass = true;
+  mat.backFaceCulling = false;
+  // mat.refractionTexture = envTex;
+
+
+
+  const pbr = new BABYLON.PBRMaterial("glassMaterial", scene);
+
+  pbr.alpha = 0.5;
+  pbr.indexOfRefractionindexOfRefraction = 1.033;
+  pbr.metallic = 0;
+  pbr.roughness = 0.1;
+  pbr.environmentIntensity = 3;
+pbr.separateCullingPass = true;
+  pbr.backFaceCulling = false;
+const envTex = await  BABYLON.CubeTexture.CreateFromPrefilteredData(
+    "https://playgrounds.babylonjs.xyz/glass-ball/decor-shop.env",
+    scene
+  );
+
+pbr.refractionTexture = envTex;
+
+  // Enable and configure clear coat (optional)
+  pbr.clearCoat.isEnabled = true;
+  pbr.clearCoat.intensity = 0.5;
+  pbr.clearCoat.roughness = 0.1;
+
+  return pbr;
+}
+
+var createScene = async function() {
+  // This creates a basic Babylon Scene object (non-mesh)
+  var scene = new BABYLON.Scene(engine);
+
+  // This creates and positions a free camera (non-mesh)
+  var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 20, new BABYLON.Vector3(0, 0, 0), scene);
+
+  // This targets the camera to scene origin
+  camera.setTarget(BABYLON.Vector3.Zero());
+
+  // This attaches the camera to the canvas
+  camera.attachControl(canvas, true);
+
+  setLight(scene);
+
+  var sphere1 = BABYLON.MeshBuilder.CreateSphere("sphere", {
+    diameter: 1,
+    segments: 32
+  }, scene);
+  // Our built-in 'sphere' shape.
+  var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
+    diameter: .34,
+    segments: 32
+  }, scene);
+
+  // Move the sphere upward at 4 units
+  sphere.position.y = 4;
+
+  const points = [new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0)];
+
+  const tessellation = 16
+  const angle = Math.PI / 2;
+  const radius = .8
+  let h
+  let w
+  for (let i = 0; i <= tessellation; i++) {
+    const currentAngle = angle * (i / tessellation);
+    const x = radius * Math.cos(currentAngle);
+    const y = radius * Math.sin(currentAngle);
+    h = -1 - y
+    w = radius - x
+    points.push(new BABYLON.Vector3(w, h, 0));
+  }
+  points.push(new BABYLON.Vector3(2, h, 0));
+  let hh = h
+  let ww = w
+  for (let i = 0; i <= tessellation; i++) {
+    const currentAngle = angle * (i / tessellation);
+    const x = radius * Math.sin(currentAngle);
+    const y = radius - radius * Math.cos(currentAngle);
+    h = hh - y
+    w = ww + 2 + x
+    points.push(new BABYLON.Vector3(w, h, 0));
+  }
+  points.push(new BABYLON.Vector3(w, h - 2, 0));
+  console.log(points);
+  const tube = BABYLON.MeshBuilder.CreateTube("tube", {
+    path: points,
+    radius: 0.2
+  }, scene);
+
+  tube.position.y += 2;
+
+
+
+
+  
+
+
+
+  tube.material =await createGlassMaterial(scene);
+
+
+
+  const havokInstance = await HavokPhysics();
+  // initialize plugin
+  var hk = new BABYLON.HavokPlugin(true, havokInstance);
+  // enable physics in the scene with a gravity
+  scene.enablePhysics(new BABYLON.Vector3(0, -9.8, 0), hk);
+
+  
+    var sphereAggregate = new BABYLON.PhysicsAggregateBABYLON.PhysicsAggregate(sphere, BABYLON.PhysicsShapeType.SPHERE, {
+    mass: 1,
+    restitution: 0.75
+  }, scene);
+
+ 
+  // Create a static box shape.
+  var tubeAggregate = new BABYLON.PhysicsAggregate(tube, BABYLON.PhysicsShapeType.MESH, {
+    mass: 0
+  }, scene);
+
+  var ground = BABYLON.MeshBuilder.CreateGround("ground", {
+    width: 10,
+    height: 10
+  }, scene);
+  ground.position.y = h
+  // Create a static box shape.
+  var groundAggregate = new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, {
+    mass: 0
+  }, scene);
+
+  return scene;
+};
+
+
+function createRoundedTube(path, radius, cornerSmoothness) {
+  const tube = BABYLON.MeshBuilder.CreateTube("tube", {
+    path: path,
+    radius: radius,
+    radiusFunction: function(i, distance) {
+      const numPoints = path.length;
+      const segmentLength = distance / (numPoints - 1) * cornerSmoothness; // Length of a segment
+
+      for (let j = 0; j < numPoints - 1; j++) {
+        const startPoint = path[j];
+        const endPoint = path[j + 1];
+        const segmentStartDistance = j * segmentLength;
+        const segmentEndDistance = (j + 1) * segmentLength;
+
+
+        if (distance >= segmentStartDistance && distance <= segmentEndDistance) {
+          const t = (distance - segmentStartDistance) / (segmentEndDistance - segmentStartDistance);
+          return radius * Math.sin(t * Math.PI / 2); // Smooth rounding using sine curve
+        }
+      }
+
+      return radius; // Maintain radius in straight sections
+    },
+    tessellation: path.length * cornerSmoothness * 2, // Adjust for smoothness
+    cap: BABYLON.Mesh.CAP_END
+  }, scene);
+  return tube;
+}
+
+
+function setLight(scene) {
+  // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+  let light = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(-1 * Math.sin(Math.PI / 4), -1 * Math.sin(Math.PI / 4), .5), scene);
+  light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, -1, 0), scene);
+  light.intensity = 0.5;
+}
+
+function createRoundedCornerPath(start, corner, end, radius, tessellation) {
+  const points = [];
+  const angle = Math.PI / 2; // 90-degree corner
+  const center = corner.clone();
+  const startDirection = start.subtract(corner).normalize();
+  const endDirection = end.subtract(corner).normalize();
+  const startPoint = corner.add(startDirection.scale(radius));
+  const endPoint = corner.add(endDirection.scale(radius));
+
+  for (let i = 0; i <= tessellation; i++) {
+    const currentAngle = angle * (i / tessellation);
+    const x = center.x + radius * Math.cos(currentAngle + Math.atan2(startDirection.y, startDirection.x));
+    const y = center.y + radius * Math.sin(currentAngle + Math.atan2(startDirection.y, startDirection.x));
+    const z = center.z; // Assuming 2D for simplicity; adjust if needed
+
+    points.push(new BABYLON.Vector3(x, y, z));
+  }
+
+  return points;
+}
+///file?id=1385
+//https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/tube/</textarea>
     </div>
     <div class="bar-renderer top" style="top: 0;">
     </div>
@@ -151,5 +238,6 @@
 <script src="utils.js"></script>
 <script src="svg.js"></script>
 <script src="glsl.js"></script>
+<script src="javascript.js"></script>
 
 </html>
