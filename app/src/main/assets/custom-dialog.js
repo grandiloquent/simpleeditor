@@ -140,6 +140,7 @@ h2 {
       .forEach(element => {
         element.addEventListener('click', () => {
           this.remove();
+          this.dispatchEvent(new CustomEvent('close'));
         })
       });
     this.wrapper.querySelector('.submit').addEventListener('click', () => {

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            color: #999 !important;
+            background: #000 !important;
+            margin: 12px !important;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        (() => {
+            const headers = [...document.querySelectorAll('h1,h2,h3')];
+            const buffers = [];
+            let index = 0;
+            headers.forEach(h => {
+                const id = `header_id_${index++}`;
+                h.id = id;
+                buffers.push(`<a href="#${id}">${h.textContent}</a>`)
+            });
+
+            document.body.insertAdjacentHTML('afterbegin', `<div style="display:flex;flex-direction:column">${buffers.join('\n')}</div>`);
+            document.body.addEventListener('click', function (event) {
+                // filter out clicks on any other elements
+                if ((event.target.nodeName == 'A' || event.target.parentNode.nodeName == 'A' || event.target.parentNode.parentNode.nodeName == 'A') && (!event.target.getAttribute('href') || !event.target.getAttribute('href').startsWith("#header"))) {
+                    //console.log(event.target.getAttribute('href'),);
+                    event.preventDefault();
+                }
+            });
+        })()
+    </script>
+</body>
+
+</html>

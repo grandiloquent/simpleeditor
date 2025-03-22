@@ -326,6 +326,7 @@ public class MainActivity extends Activity {
         initialize();
         new Thread(() -> {
             File[] files = new File(Environment.getExternalStorageDirectory(), "Books").listFiles();
+            if (files == null) return;
             List<String> paths = new ArrayList<>();
             for (File f : files) {
                 if (f.getName().endsWith(".jpg")

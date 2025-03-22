@@ -28,7 +28,7 @@ async function initializeToolbars() {
         bottomIndexs = [3, 28, 31, 33, 22, 35, 24, 34]
     } else {
         //bottomIndexs = [3, 28, 31, 33, 22, 35, 24, 34]
-        bottomIndexs = [3, 28, 604, 605, 22, 35, 25, 34]
+        bottomIndexs = [3, 606, 604, 605, 22, 35, 25, 34]
     }
 
     //}

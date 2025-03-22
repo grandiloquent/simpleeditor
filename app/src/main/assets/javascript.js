@@ -61,6 +61,15 @@ items.push([
         textarea.value = buf[0] + buf[2];
         writeText(buf[1])
     }]);
+
+items.push([
+    606,
+    "add",
+    "代码段",
+    async () => {
+        showSnipptDialog("1")
+    }
+]);
 document.addEventListener('keydown', async evt => {
     if (evt.ctrlKey) {
         if (evt.key === 's') {
